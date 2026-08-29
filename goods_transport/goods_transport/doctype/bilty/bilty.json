@@ -1,0 +1,557 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-30 00:00:00.000000",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "bilty_date",
+  "column_break_h1",
+  "company",
+  "status",
+  "amended_from",
+  "linked_section",
+  "transport_order",
+  "column_break_lnk1",
+  "transport_trip",
+  "parties_section",
+  "customer",
+  "customer_name",
+  "consignor",
+  "column_break_p1",
+  "billing_customer",
+  "consignee",
+  "route_section",
+  "origin",
+  "destination",
+  "column_break_r1",
+  "loading_location",
+  "delivery_location",
+  "vehicle_section",
+  "vehicle",
+  "vehicle_license_plate",
+  "driver",
+  "column_break_v1",
+  "driver_name",
+  "transporter",
+  "references_section",
+  "customer_challan_number",
+  "delivery_challan_number",
+  "column_break_ref1",
+  "reference_number",
+  "items_section",
+  "items",
+  "totals_column",
+  "total_quantity",
+  "total_packages",
+  "column_break_tot1",
+  "total_gross_weight",
+  "total_net_weight",
+  "freight_section",
+  "freight_item",
+  "rate_basis",
+  "rate",
+  "column_break_f1",
+  "freight_quantity",
+  "freight_amount",
+  "rate_contract",
+  "charges_section",
+  "charges",
+  "totals_footer_section",
+  "currency",
+  "additional_charges_total",
+  "column_break_gt1",
+  "grand_total",
+  "pod_section",
+  "pod_required",
+  "pod_status",
+  "column_break_pod1",
+  "sales_invoice",
+  "remarks_section",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "default": "BLT-.YYYY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "BLT-.YYYY.-.#####",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "bilty_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Bilty Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_h1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Draft\nIssued\nIn Transit\nDelivered\nPOD Received\nBilled\nClosed\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Bilty",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "linked_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Order & Trip"
+  },
+  {
+   "description": "Customer order this Bilty fulfils (partially or wholly).",
+   "fieldname": "transport_order",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Transport Order",
+   "options": "Transport Order"
+  },
+  {"fieldname": "column_break_lnk1", "fieldtype": "Column Break"},
+  {
+   "description": "Physical vehicle trip carrying this Bilty. May be assigned before or after the Bilty is created.",
+   "fieldname": "transport_trip",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Transport Trip",
+   "options": "Transport Trip"
+  },
+  {
+   "fieldname": "parties_section",
+   "fieldtype": "Section Break",
+   "label": "Parties"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consignor",
+   "fieldtype": "Data",
+   "label": "Consignor"
+  },
+  {
+   "fieldname": "column_break_p1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Customer to be invoiced. Defaults to Customer if left blank.",
+   "fieldname": "billing_customer",
+   "fieldtype": "Link",
+   "label": "Billing Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "consignee",
+   "fieldtype": "Data",
+   "label": "Consignee"
+  },
+  {
+   "fieldname": "route_section",
+   "fieldtype": "Section Break",
+   "label": "Route"
+  },
+  {
+   "fieldname": "origin",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Origin",
+   "options": "Transport Location",
+   "reqd": 1
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Destination",
+   "options": "Transport Location",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_r1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "loading_location",
+   "fieldtype": "Link",
+   "label": "Loading Location",
+   "options": "Transport Location"
+  },
+  {
+   "fieldname": "delivery_location",
+   "fieldtype": "Link",
+   "label": "Delivery Location",
+   "options": "Transport Location"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "vehicle_section",
+   "fieldtype": "Section Break",
+   "label": "Vehicle & Driver"
+  },
+  {
+   "fieldname": "vehicle",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Vehicle",
+   "options": "Vehicle"
+  },
+  {
+   "description": "Snapshot of the vehicle's license plate at submit time. Preserved even if Vehicle master changes later.",
+   "fetch_from": "vehicle.license_plate",
+   "fieldname": "vehicle_license_plate",
+   "fieldtype": "Data",
+   "label": "Vehicle License Plate",
+   "read_only_depends_on": "eval:doc.docstatus > 0"
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "label": "Driver",
+   "options": "Driver"
+  },
+  {
+   "fieldname": "column_break_v1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "driver.full_name",
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "transporter",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Transporter",
+   "options": "Supplier"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "references_section",
+   "fieldtype": "Section Break",
+   "label": "References"
+  },
+  {
+   "fieldname": "customer_challan_number",
+   "fieldtype": "Data",
+   "label": "Customer Challan #"
+  },
+  {
+   "fieldname": "delivery_challan_number",
+   "fieldtype": "Data",
+   "label": "Delivery Challan #"
+  },
+  {
+   "fieldname": "column_break_ref1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_number",
+   "fieldtype": "Data",
+   "label": "Reference #"
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Cargo"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Bilty Item"
+  },
+  {
+   "fieldname": "totals_column",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Float",
+   "label": "Total Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_packages",
+   "fieldtype": "Int",
+   "label": "Total Packages",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_tot1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_gross_weight",
+   "fieldtype": "Float",
+   "label": "Total Gross Weight",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_net_weight",
+   "fieldtype": "Float",
+   "label": "Total Net Weight",
+   "read_only": 1
+  },
+  {
+   "fieldname": "freight_section",
+   "fieldtype": "Section Break",
+   "label": "Freight"
+  },
+  {
+   "description": "Item used as the Freight line on the generated Sales Invoice.",
+   "fieldname": "freight_item",
+   "fieldtype": "Link",
+   "label": "Freight Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rate_basis",
+   "fieldtype": "Select",
+   "label": "Rate Basis",
+   "options": "Per Trip\nPer Vehicle\nPer Ton\nPer Kg\nPer Package\nPer KM\nFixed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Rate",
+   "options": "currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_f1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Quantity used to compute Freight Amount = Rate × Freight Quantity.",
+   "fieldname": "freight_quantity",
+   "fieldtype": "Float",
+   "label": "Freight Quantity",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "freight_amount",
+   "fieldtype": "Currency",
+   "label": "Freight Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "description": "Rate Contract matched at Bilty creation, if any. Rate remains manually editable.",
+   "fieldname": "rate_contract",
+   "fieldtype": "Link",
+   "label": "Rate Contract",
+   "options": "Transport Rate Contract",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "charges_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Charges"
+  },
+  {
+   "fieldname": "charges",
+   "fieldtype": "Table",
+   "label": "Charges",
+   "options": "Bilty Charge"
+  },
+  {
+   "fieldname": "totals_footer_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "additional_charges_total",
+   "fieldtype": "Currency",
+   "label": "Additional Charges Total",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_gt1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "grand_total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Grand Total",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "pod_section",
+   "fieldtype": "Section Break",
+   "label": "Proof of Delivery"
+  },
+  {
+   "default": "0",
+   "fieldname": "pod_required",
+   "fieldtype": "Check",
+   "label": "POD Required"
+  },
+  {
+   "default": "Not Required",
+   "fieldname": "pod_status",
+   "fieldtype": "Select",
+   "label": "POD Status",
+   "options": "Not Required\nPending\nReceived",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_pod1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice",
+   "no_copy": 1,
+   "options": "Sales Invoice",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "remarks_section",
+   "fieldtype": "Section Break",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-08-30 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Goods Transport",
+ "name": "Bilty",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "customer_name",
+ "track_changes": 1
+}
