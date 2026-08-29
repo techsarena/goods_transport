@@ -5,6 +5,36 @@ app_description = "Accounting for goods transport"
 app_email = "info@techsarena.com"
 app_license = "mit"
 
+after_install = "goods_transport.install.after_install"
+
+fixtures = [
+	{
+		"doctype": "Custom Field",
+		"filters": [
+			[
+				"name",
+				"in",
+				[
+					"Vehicle-transport_section",
+					"Vehicle-ownership_type",
+					"Vehicle-vehicle_type",
+					"Vehicle-current_status",
+					"Vehicle-transport_col_break",
+					"Vehicle-transporter",
+					"Vehicle-vehicle_owner",
+					"Vehicle-default_driver",
+					"Vehicle-capacity_section",
+					"Vehicle-payload_capacity",
+					"Vehicle-capacity_col_break",
+					"Vehicle-volume_capacity",
+					"Sales Invoice-transport_section",
+					"Sales Invoice-bilty_references",
+				],
+			]
+		],
+	},
+]
+
 # Apps
 # ------------------
 

@@ -4,3 +4,9 @@
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
+goods_transport.patches.v1_0.install_masters
+goods_transport.patches.v1_0.install_transport_custom_fields
+goods_transport.patches.v1_0.install_bilty_print_format
+goods_transport.patches.v1_0.install_accounting_dimensions
+goods_transport.patches.v1_0.install_dashboard
+goods_transport.patches.v1_0.install_workspace
