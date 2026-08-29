@@ -1,0 +1,48 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:expense_type_name",
+ "creation": "2026-08-30 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "expense_type_name",
+  "is_active",
+  "column_break_1",
+  "requires_receipt",
+  "billable_by_default",
+  "defaults_section",
+  "default_expense_account",
+  "column_break_2",
+  "default_item"
+ ],
+ "fields": [
+  {"fieldname": "expense_type_name", "fieldtype": "Data", "in_list_view": 1, "label": "Expense Type Name", "reqd": 1, "unique": 1},
+  {"default": "1", "fieldname": "is_active", "fieldtype": "Check", "in_list_view": 1, "label": "Is Active"},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"default": "0", "fieldname": "requires_receipt", "fieldtype": "Check", "in_list_view": 1, "label": "Requires Receipt"},
+  {"default": "0", "fieldname": "billable_by_default", "fieldtype": "Check", "in_list_view": 1, "label": "Billable to Customer by Default"},
+  {"fieldname": "defaults_section", "fieldtype": "Section Break", "label": "Accounting Defaults"},
+  {"description": "Company-agnostic root account, e.g. 'Freight Expenses'. Actual company account is resolved from this.", "fieldname": "default_expense_account", "fieldtype": "Link", "label": "Default Expense Account", "options": "Account"},
+  {"fieldname": "column_break_2", "fieldtype": "Column Break"},
+  {"description": "Optional. Used when the expense is billed via a Purchase Invoice.", "fieldname": "default_item", "fieldtype": "Link", "label": "Default Item", "options": "Item"}
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-30 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Goods Transport",
+ "name": "Trip Expense Type",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
+  {"create": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Accounts Manager", "share": 1, "write": 1},
+  {"read": 1, "report": 1, "role": "Accounts User"}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
