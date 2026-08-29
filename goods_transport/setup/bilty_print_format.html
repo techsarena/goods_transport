@@ -1,0 +1,173 @@
+{%- set company = frappe.get_doc("Company", doc.company) if doc.company else None -%}
+{%- set customer_addr = doc.customer_name or doc.customer or "" -%}
+<div class="bilty-print" style="font-family: 'Helvetica Neue', Arial, sans-serif; color:#111; font-size:11px;">
+	<style>
+		.bilty-print h1, .bilty-print h2, .bilty-print h3 { margin: 0; padding: 0; }
+		.bilty-print table { width: 100%; border-collapse: collapse; }
+		.bilty-print .box { border: 1px solid #333; padding: 6px 8px; }
+		.bilty-print .box + .box { margin-top: 6px; }
+		.bilty-print .grid { display: table; width: 100%; table-layout: fixed; }
+		.bilty-print .cell { display: table-cell; vertical-align: top; padding: 4px 6px; }
+		.bilty-print .label { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.4px; }
+		.bilty-print .value { font-size: 12px; font-weight: 600; }
+		.bilty-print .items th, .bilty-print .items td { border: 1px solid #999; padding: 4px 6px; text-align: left; }
+		.bilty-print .items th { background: #eee; }
+		.bilty-print .totals td { padding: 2px 6px; }
+		.bilty-print .totals .k { color: #555; }
+		.bilty-print .totals .v { text-align: right; font-weight: 600; }
+		.bilty-print .footer { margin-top: 18px; }
+		.bilty-print .sig { border-top: 1px solid #999; padding-top: 4px; text-align: center; font-size: 10px; }
+	</style>
+
+	<div class="grid" style="border-bottom: 2px solid #111; padding-bottom: 6px;">
+		<div class="cell" style="width: 60%;">
+			<h2>{{ company.company_name if company else "" }}</h2>
+			<div style="color:#555;">{{ (company.company_description or "") if company else "" }}</div>
+		</div>
+		<div class="cell" style="width: 40%; text-align: right;">
+			<h1 style="letter-spacing: 2px;">BILTY</h1>
+			<div><b>{{ doc.name }}</b></div>
+			<div>{{ frappe.utils.formatdate(doc.bilty_date) }}</div>
+		</div>
+	</div>
+
+	<div class="grid" style="margin-top: 8px;">
+		<div class="cell box" style="width: 50%;">
+			<div class="label">Consignor</div>
+			<div class="value">{{ doc.consignor or customer_addr }}</div>
+			<div class="label" style="margin-top: 6px;">Customer</div>
+			<div>{{ customer_addr }}</div>
+		</div>
+		<div class="cell box" style="width: 50%;">
+			<div class="label">Consignee</div>
+			<div class="value">{{ doc.consignee or "" }}</div>
+			<div class="label" style="margin-top: 6px;">Billing Customer</div>
+			<div>{{ doc.billing_customer or doc.customer }}</div>
+		</div>
+	</div>
+
+	<div class="grid" style="margin-top: 6px;">
+		<div class="cell box" style="width: 50%;">
+			<div class="label">Origin</div>
+			<div class="value">{{ doc.origin }}</div>
+			{% if doc.loading_location %}
+			<div class="label" style="margin-top: 4px;">Loading Point</div>
+			<div>{{ doc.loading_location }}</div>
+			{% endif %}
+		</div>
+		<div class="cell box" style="width: 50%;">
+			<div class="label">Destination</div>
+			<div class="value">{{ doc.destination }}</div>
+			{% if doc.delivery_location %}
+			<div class="label" style="margin-top: 4px;">Delivery Point</div>
+			<div>{{ doc.delivery_location }}</div>
+			{% endif %}
+		</div>
+	</div>
+
+	<div class="grid" style="margin-top: 6px;">
+		<div class="cell box" style="width: 33.33%;">
+			<div class="label">Vehicle</div>
+			<div class="value">{{ doc.vehicle_license_plate or doc.vehicle or "—" }}</div>
+		</div>
+		<div class="cell box" style="width: 33.33%;">
+			<div class="label">Driver</div>
+			<div>{{ doc.driver_name or doc.driver or "—" }}</div>
+		</div>
+		<div class="cell box" style="width: 33.33%;">
+			<div class="label">Transporter</div>
+			<div>{{ doc.transporter or "—" }}</div>
+		</div>
+	</div>
+
+	{% if doc.customer_challan_number or doc.delivery_challan_number or doc.reference_number %}
+	<div class="box" style="margin-top: 6px;">
+		<div class="grid">
+			{% if doc.customer_challan_number %}
+			<div class="cell" style="width: 33%;"><span class="label">Cust. Challan #</span><br/>{{ doc.customer_challan_number }}</div>
+			{% endif %}
+			{% if doc.delivery_challan_number %}
+			<div class="cell" style="width: 33%;"><span class="label">Delivery Challan #</span><br/>{{ doc.delivery_challan_number }}</div>
+			{% endif %}
+			{% if doc.reference_number %}
+			<div class="cell" style="width: 33%;"><span class="label">Reference #</span><br/>{{ doc.reference_number }}</div>
+			{% endif %}
+		</div>
+	</div>
+	{% endif %}
+
+	<h3 style="margin-top: 12px; margin-bottom: 4px;">Cargo</h3>
+	<table class="items">
+		<thead>
+			<tr>
+				<th style="width: 30%;">Item</th>
+				<th>Description</th>
+				<th style="width: 8%; text-align: right;">Qty</th>
+				<th style="width: 8%;">UOM</th>
+				<th style="width: 8%; text-align: right;">Pkgs</th>
+				<th style="width: 10%; text-align: right;">Gross Wt</th>
+				<th style="width: 10%; text-align: right;">Net Wt</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for r in doc.items %}
+			<tr>
+				<td>{{ r.item_name or r.item or "" }}</td>
+				<td>{{ r.description or "" }}</td>
+				<td style="text-align: right;">{{ "%.2f"|format(r.quantity or 0) }}</td>
+				<td>{{ r.uom or "" }}</td>
+				<td style="text-align: right;">{{ r.packages or 0 }}</td>
+				<td style="text-align: right;">{{ "%.2f"|format(r.gross_weight or 0) }}</td>
+				<td style="text-align: right;">{{ "%.2f"|format(r.net_weight or 0) }}</td>
+			</tr>
+			{% endfor %}
+			<tr style="font-weight: 600; background: #f5f5f5;">
+				<td colspan="2">Totals</td>
+				<td style="text-align: right;">{{ "%.2f"|format(doc.total_quantity or 0) }}</td>
+				<td></td>
+				<td style="text-align: right;">{{ doc.total_packages or 0 }}</td>
+				<td style="text-align: right;">{{ "%.2f"|format(doc.total_gross_weight or 0) }}</td>
+				<td style="text-align: right;">{{ "%.2f"|format(doc.total_net_weight or 0) }}</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div class="grid" style="margin-top: 10px;">
+		<div class="cell" style="width: 60%;">
+			{% if doc.remarks %}
+			<div class="box"><span class="label">Remarks</span><br/>{{ doc.remarks }}</div>
+			{% endif %}
+			<div class="box" style="margin-top: 6px;">
+				<span class="label">Terms</span>
+				<ol style="margin: 4px 0 0 16px; padding: 0;">
+					<li>Goods received in apparent good order and condition unless otherwise stated.</li>
+					<li>Freight subject to the terms of the transport contract with {{ (company.company_name if company else 'the carrier') }}.</li>
+					<li>Consignee to verify contents and quantities on receipt.</li>
+					<li>Discrepancies must be noted on the delivery challan at the time of delivery.</li>
+				</ol>
+			</div>
+		</div>
+		<div class="cell" style="width: 40%;">
+			<table class="totals box" style="width: 100%;">
+				<tr><td class="k">Freight ({{ doc.rate_basis or "" }})</td>
+					<td class="v">{{ frappe.utils.fmt_money(doc.freight_amount, currency=doc.currency) }}</td></tr>
+				<tr><td class="k">Additional Charges</td>
+					<td class="v">{{ frappe.utils.fmt_money(doc.additional_charges_total, currency=doc.currency) }}</td></tr>
+				<tr style="border-top: 1px solid #333;">
+					<td class="k" style="font-size: 12px; font-weight: 700;">Grand Total</td>
+					<td class="v" style="font-size: 13px;">{{ frappe.utils.fmt_money(doc.grand_total, currency=doc.currency) }}</td></tr>
+			</table>
+			{% if doc.pod_required %}
+			<div class="box" style="margin-top: 8px; background: #fffbea;">
+				<span class="label">POD Required</span><br/>Status: <b>{{ doc.pod_status }}</b>
+			</div>
+			{% endif %}
+		</div>
+	</div>
+
+	<div class="footer grid" style="margin-top: 30px;">
+		<div class="cell" style="width: 33%;"><div class="sig">Consignor Signature</div></div>
+		<div class="cell" style="width: 33%;"><div class="sig">Driver Signature</div></div>
+		<div class="cell" style="width: 33%;"><div class="sig">Consignee Signature (on delivery)</div></div>
+	</div>
+</div>
