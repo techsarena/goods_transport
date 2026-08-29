@@ -1,0 +1,104 @@
+{%- set company = frappe.get_doc("Company", doc.company) if doc.company else None -%}
+{%- set bilties = frappe.get_all("Bilty", filters={"transport_order": doc.name, "docstatus": ["!=", 2]}, fields=["name","bilty_date","status","transport_trip","total_quantity","grand_total"]) -%}
+<div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111;font-size:11px;">
+	<style>
+		.to h1,.to h2{margin:0;padding:0}
+		.to .box{border:1px solid #333;padding:6px 8px}
+		.to .grid{display:table;width:100%;table-layout:fixed}
+		.to .cell{display:table-cell;vertical-align:top;padding:4px 6px}
+		.to .label{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:.4px}
+		.to .value{font-size:12px;font-weight:600}
+		.to table.items{width:100%;border-collapse:collapse}
+		.to table.items th,.to table.items td{border:1px solid #999;padding:4px 6px;text-align:left}
+		.to table.items th{background:#eee}
+	</style>
+	<div class="to">
+		<div class="grid" style="border-bottom:2px solid #111;padding-bottom:6px;">
+			<div class="cell" style="width:60%;">
+				<h2>{{ company.company_name if company else "" }}</h2>
+			</div>
+			<div class="cell" style="width:40%;text-align:right;">
+				<h1 style="letter-spacing:2px;">TRANSPORT ORDER</h1>
+				<div><b>{{ doc.name }}</b></div>
+				<div>Booked {{ frappe.utils.formatdate(doc.booking_date) }}</div>
+				<div><b>Status:</b> {{ doc.status }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:8px;">
+			<div class="cell box" style="width:50%;">
+				<div class="label">Customer</div>
+				<div class="value">{{ doc.customer_name or doc.customer }}</div>
+				{% if doc.customer_reference %}<div class="label" style="margin-top:4px;">Cust. Reference</div><div>{{ doc.customer_reference }}</div>{% endif %}
+			</div>
+			<div class="cell box" style="width:50%;">
+				<div class="label">Booking Person</div>
+				<div>{{ doc.booking_person or "—" }}</div>
+				<div class="label" style="margin-top:4px;">POD Required</div>
+				<div>{{ "Yes" if doc.pod_required else "No" }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:6px;">
+			<div class="cell box" style="width:50%;">
+				<div class="label">Origin</div><div class="value">{{ doc.origin }}</div>
+				{% if doc.loading_location %}<div class="label" style="margin-top:4px;">Loading Location</div><div>{{ doc.loading_location }}</div>{% endif %}
+			</div>
+			<div class="cell box" style="width:50%;">
+				<div class="label">Destination</div><div class="value">{{ doc.destination }}</div>
+				{% if doc.delivery_location %}<div class="label" style="margin-top:4px;">Delivery Location</div><div>{{ doc.delivery_location }}</div>{% endif %}
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:6px;">
+			<div class="cell box" style="width:50%;"><span class="label">Expected Loading</span><br/>{{ frappe.utils.formatdate(doc.expected_loading_date) if doc.expected_loading_date else "—" }}</div>
+			<div class="cell box" style="width:50%;"><span class="label">Expected Delivery</span><br/>{{ frappe.utils.formatdate(doc.expected_delivery_date) if doc.expected_delivery_date else "—" }}</div>
+		</div>
+
+		<h3 style="margin-top:12px;margin-bottom:4px;">Cargo & Commercials</h3>
+		<div class="box">
+			<div class="grid">
+				<div class="cell" style="width:35%;"><span class="label">Commodity</span><br/>{{ doc.commodity or "—" }}<div style="color:#555;margin-top:2px;">{{ doc.description or "" }}</div></div>
+				<div class="cell" style="width:15%;text-align:right;"><span class="label">Quantity</span><br/>{{ "%.2f"|format(doc.quantity or 0) }} {{ doc.uom or "" }}</div>
+				<div class="cell" style="width:15%;text-align:right;"><span class="label">Weight</span><br/>{{ "%.2f"|format(doc.weight or 0) }} kg</div>
+				<div class="cell" style="width:10%;text-align:right;"><span class="label">Pkgs</span><br/>{{ doc.package_count or 0 }}</div>
+				<div class="cell" style="width:15%;text-align:right;"><span class="label">Rate</span><br/>{{ frappe.utils.fmt_money(doc.rate or 0, currency=doc.currency) }} ({{ doc.rate_basis or "" }})</div>
+				<div class="cell" style="width:10%;text-align:right;"><span class="label">Estimated</span><br/><b>{{ frappe.utils.fmt_money(doc.grand_total or 0, currency=doc.currency) }}</b></div>
+			</div>
+		</div>
+
+		<h3 style="margin-top:12px;margin-bottom:4px;">Progress</h3>
+		<div class="box">
+			<div class="grid">
+				<div class="cell" style="width:33%;"><span class="label">Dispatched</span><br/>{{ "%.2f"|format(doc.dispatched_quantity or 0) }} / {{ "%.2f"|format(doc.quantity or 0) }}</div>
+				<div class="cell" style="width:33%;"><span class="label">Delivered</span><br/>{{ "%.2f"|format(doc.delivered_quantity or 0) }}</div>
+				<div class="cell" style="width:34%;"><span class="label">Remaining</span><br/>{{ "%.2f"|format(doc.remaining_quantity or 0) }}</div>
+			</div>
+		</div>
+
+		<h3 style="margin-top:12px;margin-bottom:4px;">Bilties Against This Order ({{ bilties|length }})</h3>
+		<table class="items">
+			<thead><tr><th style="width:15%;">Bilty</th><th style="width:12%;">Date</th><th style="width:12%;">Status</th><th style="width:15%;">Trip</th><th style="width:12%;text-align:right;">Quantity</th><th style="width:15%;text-align:right;">Amount</th></tr></thead>
+			<tbody>
+				{% for b in bilties %}
+				<tr>
+					<td>{{ b.name }}</td>
+					<td>{{ frappe.utils.formatdate(b.bilty_date) }}</td>
+					<td>{{ b.status }}</td>
+					<td>{{ b.transport_trip or "—" }}</td>
+					<td style="text-align:right;">{{ "%.2f"|format(b.total_quantity or 0) }}</td>
+					<td style="text-align:right;">{{ frappe.utils.fmt_money(b.grand_total or 0, currency=doc.currency) }}</td>
+				</tr>
+				{% else %}
+				<tr><td colspan="6" style="text-align:center;color:#888;">No bilties yet.</td></tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		{% if doc.remarks %}
+		<div class="box" style="margin-top:8px;">
+			<span class="label">Remarks</span><br/>{{ doc.remarks }}
+		</div>
+		{% endif %}
+	</div>
+</div>

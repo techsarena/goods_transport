@@ -1,0 +1,109 @@
+{%- set trip = frappe.get_doc("Transport Trip", doc.trip) if doc.trip else None -%}
+{%- set company = frappe.get_doc("Company", doc.company) if doc.company else None -%}
+{%- set expenses = frappe.get_all("Trip Expense", filters={"trip": doc.trip, "docstatus": 1}, fields=["name","expense_date","description","expense_type","payment_mode","amount"]) -%}
+{%- set advances = frappe.get_all("Trip Advance", filters={"trip": doc.trip, "docstatus": 1}, fields=["name","advance_date","receiver_name","amount"]) -%}
+{%- set invoices = frappe.get_all("Sales Invoice", filters={"transport_trip": doc.trip, "docstatus": 1}, fields=["name","customer","grand_total"]) -%}
+<div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111;font-size:11px;">
+	<style>
+		.tss h1,.tss h2,.tss h3{margin:0;padding:0}
+		.tss .box{border:1px solid #333;padding:6px 8px}
+		.tss .grid{display:table;width:100%;table-layout:fixed}
+		.tss .cell{display:table-cell;vertical-align:top;padding:4px 6px}
+		.tss .label{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:.4px}
+		.tss .value{font-size:12px;font-weight:600}
+		.tss table{width:100%;border-collapse:collapse}
+		.tss table th,.tss table td{border:1px solid #999;padding:4px 6px;text-align:left}
+		.tss table th{background:#eee}
+		.tss .kv td{border:none;padding:2px 6px}
+		.tss .kv .k{color:#555;width:60%}
+		.tss .kv .v{text-align:right;font-weight:600}
+		.tss .kv .total .k{font-size:12px;font-weight:700;border-top:1px solid #333;padding-top:6px}
+		.tss .kv .total .v{font-size:13px;border-top:1px solid #333;padding-top:6px}
+	</style>
+	<div class="tss">
+		<div class="grid" style="border-bottom:2px solid #111;padding-bottom:6px;">
+			<div class="cell" style="width:60%;">
+				<h2>{{ company.company_name if company else "" }}</h2>
+				<div style="color:#555;">Trip Settlement</div>
+			</div>
+			<div class="cell" style="width:40%;text-align:right;">
+				<h1 style="letter-spacing:2px;">SETTLEMENT</h1>
+				<div><b>{{ doc.name }}</b></div>
+				<div>{{ frappe.utils.formatdate(doc.settlement_date) }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:8px;">
+			<div class="cell box" style="width:50%;">
+				<div class="label">Trip</div>
+				<div class="value">{{ doc.trip }}</div>
+				{% if trip %}
+				<div style="color:#555;margin-top:2px;">{{ trip.vehicle_license_plate or trip.vehicle }} · {{ trip.origin or "" }} → {{ trip.destination or "" }}</div>
+				{% endif %}
+			</div>
+			<div class="cell box" style="width:50%;">
+				<div class="label">Bilty / Invoice Count</div>
+				<div>{{ doc.bilty_count or 0 }} bilties · {{ doc.invoice_count or 0 }} invoices</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:8px;">
+			<div class="cell" style="width:50%;">
+				<h3>Revenue &amp; Cost</h3>
+				<table class="kv">
+					<tr><td class="k">Revenue (Invoiced)</td><td class="v">{{ frappe.utils.fmt_money(doc.total_revenue, currency=doc.currency) }}</td></tr>
+					<tr><td class="k">Pending Revenue (Unbilled)</td><td class="v">{{ frappe.utils.fmt_money(doc.pending_revenue, currency=doc.currency) }}</td></tr>
+					<tr><td class="k">— Vehicle Hire</td><td class="v">({{ frappe.utils.fmt_money(doc.vehicle_hire, currency=doc.currency) }})</td></tr>
+					<tr><td class="k">— Trip Expenses</td><td class="v">({{ frappe.utils.fmt_money(doc.total_expenses, currency=doc.currency) }})</td></tr>
+					<tr><td class="k">Total Cost</td><td class="v">({{ frappe.utils.fmt_money(doc.total_cost, currency=doc.currency) }})</td></tr>
+					<tr class="total"><td class="k">Gross Profit ({{ "%.1f"|format(doc.margin_percent or 0) }}%)</td>
+						<td class="v">{{ frappe.utils.fmt_money(doc.gross_profit, currency=doc.currency) }}</td></tr>
+				</table>
+			</div>
+			<div class="cell" style="width:50%;">
+				<h3>Driver Reconciliation</h3>
+				<table class="kv">
+					<tr><td class="k">Advances Paid</td><td class="v">{{ frappe.utils.fmt_money(doc.total_advances, currency=doc.currency) }}</td></tr>
+					<tr><td class="k">— Consumed From Advance</td><td class="v">({{ frappe.utils.fmt_money(doc.consumed_from_advance, currency=doc.currency) }})</td></tr>
+					<tr><td class="k">Advance Balance</td><td class="v">{{ frappe.utils.fmt_money(doc.advance_balance, currency=doc.currency) }}</td></tr>
+					<tr><td class="k">— Cash Returned</td><td class="v">({{ frappe.utils.fmt_money(doc.cash_returned, currency=doc.currency) }})</td></tr>
+					<tr class="total"><td class="k">Outstanding From Driver</td>
+						<td class="v">{{ frappe.utils.fmt_money(doc.outstanding_from_driver, currency=doc.currency) }}</td></tr>
+				</table>
+			</div>
+		</div>
+
+		<h3 style="margin-top:12px;">Expense Breakdown</h3>
+		<table>
+			<thead><tr><th>#</th><th>Date</th><th>Type</th><th>Description</th><th>Mode</th><th style="text-align:right;">Amount</th></tr></thead>
+			<tbody>
+				{% for e in expenses %}
+				<tr><td>{{ e.name }}</td><td>{{ frappe.utils.formatdate(e.expense_date) }}</td>
+					<td>{{ e.expense_type or "—" }}</td>
+					<td>{{ e.description or "" }}</td>
+					<td>{{ e.payment_mode }}</td>
+					<td style="text-align:right;">{{ frappe.utils.fmt_money(e.amount, currency=doc.currency) }}</td></tr>
+				{% else %}
+				<tr><td colspan="6" style="text-align:center;color:#888;">No expenses booked.</td></tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		{% if invoices %}
+		<h3 style="margin-top:12px;">Sales Invoices on this Trip</h3>
+		<table>
+			<thead><tr><th>Invoice</th><th>Customer</th><th style="text-align:right;">Amount</th></tr></thead>
+			<tbody>
+				{% for i in invoices %}
+				<tr><td>{{ i.name }}</td><td>{{ i.customer }}</td>
+					<td style="text-align:right;">{{ frappe.utils.fmt_money(i.grand_total, currency=doc.currency) }}</td></tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% endif %}
+
+		{% if doc.remarks %}
+		<div class="box" style="margin-top:8px;"><span class="label">Remarks</span><br/>{{ doc.remarks }}</div>
+		{% endif %}
+	</div>
+</div>

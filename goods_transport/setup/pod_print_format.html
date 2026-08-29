@@ -1,0 +1,76 @@
+{%- set bilty = frappe.get_doc("Bilty", doc.bilty) if doc.bilty else None -%}
+{%- set company = frappe.get_doc("Company", bilty.company) if bilty else None -%}
+<div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111;font-size:11px;">
+	<style>
+		.pod h1,.pod h2{margin:0;padding:0}
+		.pod .box{border:1px solid #333;padding:6px 8px}
+		.pod .grid{display:table;width:100%;table-layout:fixed}
+		.pod .cell{display:table-cell;vertical-align:top;padding:4px 6px}
+		.pod .label{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:.4px}
+		.pod .value{font-size:12px;font-weight:600}
+		.pod .sig{border-top:1px solid #999;padding-top:4px;text-align:center;font-size:10px}
+	</style>
+	<div class="pod">
+		<div class="grid" style="border-bottom:2px solid #111;padding-bottom:6px;">
+			<div class="cell" style="width:60%;">
+				<h2>{{ company.company_name if company else "" }}</h2>
+				<div style="color:#555;">Proof of Delivery</div>
+			</div>
+			<div class="cell" style="width:40%;text-align:right;">
+				<h1 style="letter-spacing:2px;">POD</h1>
+				<div><b>{{ doc.name }}</b></div>
+				<div>{{ frappe.utils.formatdate(doc.delivery_date) }}{% if doc.delivery_time %} · {{ doc.delivery_time }}{% endif %}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:8px;">
+			<div class="cell box" style="width:50%;">
+				<div class="label">Bilty</div>
+				<div class="value">{{ doc.bilty }}</div>
+				<div class="label" style="margin-top:4px;">Customer</div>
+				<div>{{ bilty.customer_name if bilty else doc.customer }}</div>
+			</div>
+			<div class="cell box" style="width:50%;">
+				<div class="label">Trip</div>
+				<div>{{ doc.trip or "—" }}</div>
+				<div class="label" style="margin-top:4px;">Vehicle</div>
+				<div>{{ (bilty.vehicle_license_plate or bilty.vehicle) if bilty else "" }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:6px;">
+			<div class="cell box" style="width:50%;">
+				<div class="label">Origin</div><div>{{ bilty.origin if bilty else "" }}</div>
+			</div>
+			<div class="cell box" style="width:50%;">
+				<div class="label">Destination</div><div>{{ doc.destination or (bilty.destination if bilty else "") }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:6px;">
+			<div class="cell box" style="width:33%;"><span class="label">Shipped</span><br/><b>{{ "%.2f"|format(doc.shipped_quantity or 0) }}</b></div>
+			<div class="cell box" style="width:33%;"><span class="label">Delivered</span><br/><b>{{ "%.2f"|format(doc.delivered_quantity or 0) }}</b></div>
+			<div class="cell box" style="width:34%;background:{% if (doc.short_quantity or 0) > 0 %}#fff3cd{% else %}#fff{% endif %};"><span class="label">Short / Damaged</span><br/><b>{{ "%.2f"|format(doc.short_quantity or 0) }}</b> short · <b>{{ "%.2f"|format(doc.damaged_quantity or 0) }}</b> damaged</div>
+		</div>
+
+		<div class="grid" style="margin-top:6px;">
+			<div class="cell box" style="width:50%;">
+				<div class="label">Receiver Name</div>
+				<div class="value">{{ doc.receiver_name }}</div>
+				<div class="label" style="margin-top:4px;">Receiver Contact</div>
+				<div>{{ doc.receiver_contact or "—" }}</div>
+			</div>
+			<div class="cell box" style="width:50%;">
+				<div class="label">Location (GPS)</div>
+				<div>{{ ("%.6f, %.6f"|format(doc.latitude, doc.longitude)) if (doc.latitude and doc.longitude) else "—" }}</div>
+				<div class="label" style="margin-top:4px;">Remarks</div>
+				<div>{{ doc.remarks or "" }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:24px;">
+			<div class="cell" style="width:50%;"><div class="sig">Delivered By (Driver)</div></div>
+			<div class="cell" style="width:50%;"><div class="sig">Received By ({{ doc.receiver_name or "" }})</div></div>
+		</div>
+	</div>
+</div>

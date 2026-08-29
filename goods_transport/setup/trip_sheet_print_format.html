@@ -1,0 +1,123 @@
+{%- set company = frappe.get_doc("Company", doc.company) if doc.company else None -%}
+{%- set bilties = frappe.get_all("Bilty", filters={"transport_trip": doc.name, "docstatus": 1}, fields=["name","customer_name","origin","destination","total_gross_weight","total_packages","grand_total","currency"]) -%}
+{%- set advances = frappe.get_all("Trip Advance", filters={"trip": doc.name, "docstatus": 1}, fields=["name","advance_date","receiver_name","amount"]) -%}
+<div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111;font-size:11px;">
+	<style>
+		.ts h1,.ts h2,.ts h3{margin:0;padding:0}
+		.ts .box{border:1px solid #333;padding:6px 8px}
+		.ts .grid{display:table;width:100%;table-layout:fixed}
+		.ts .cell{display:table-cell;vertical-align:top;padding:4px 6px}
+		.ts .label{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:.4px}
+		.ts .value{font-size:12px;font-weight:600}
+		.ts table.items{width:100%;border-collapse:collapse}
+		.ts table.items th,.ts table.items td{border:1px solid #999;padding:4px 6px;text-align:left}
+		.ts table.items th{background:#eee}
+		.ts .sig{border-top:1px solid #999;padding-top:4px;text-align:center;font-size:10px}
+	</style>
+	<div class="ts">
+		<div class="grid" style="border-bottom:2px solid #111;padding-bottom:6px;">
+			<div class="cell" style="width:60%;">
+				<h2>{{ company.company_name if company else "" }}</h2>
+				<div style="color:#555;">Trip Sheet — for driver &amp; dispatcher use</div>
+			</div>
+			<div class="cell" style="width:40%;text-align:right;">
+				<h1 style="letter-spacing:2px;">TRIP</h1>
+				<div><b>{{ doc.name }}</b></div>
+				<div>{{ frappe.utils.formatdate(doc.trip_date) }}</div>
+				<div><b>Status:</b> {{ doc.status }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:8px;">
+			<div class="cell box" style="width:33%;">
+				<div class="label">Vehicle</div>
+				<div class="value">{{ doc.vehicle_license_plate or doc.vehicle or "—" }}</div>
+				<div class="label" style="margin-top:4px;">Ownership</div>
+				<div>{{ doc.ownership_type or "—" }}</div>
+			</div>
+			<div class="cell box" style="width:33%;">
+				<div class="label">Driver</div>
+				<div class="value">{{ doc.driver_name or doc.driver or "—" }}</div>
+			</div>
+			<div class="cell box" style="width:34%;">
+				<div class="label">Transporter</div>
+				<div>{{ doc.transporter or "—" }}</div>
+				<div class="label" style="margin-top:4px;">Vehicle Owner</div>
+				<div>{{ doc.vehicle_owner or "—" }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:6px;">
+			<div class="cell box" style="width:50%;">
+				<div class="label">Origin</div><div class="value">{{ doc.origin or "—" }}</div>
+			</div>
+			<div class="cell box" style="width:50%;">
+				<div class="label">Destination</div><div class="value">{{ doc.destination or "—" }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:6px;">
+			<div class="cell box" style="width:25%;"><span class="label">Planned Dist.</span><br/>{{ doc.planned_distance or "—" }} km</div>
+			<div class="cell box" style="width:25%;"><span class="label">Capacity</span><br/>{{ doc.vehicle_capacity or "—" }} kg</div>
+			<div class="cell box" style="width:25%;"><span class="label">Loaded</span><br/>{{ doc.loaded_weight or 0 }} kg</div>
+			<div class="cell box" style="width:25%;"><span class="label">Utilization</span><br/>{{ "%.1f"|format(doc.capacity_utilization or 0) }}%</div>
+		</div>
+
+		<h3 style="margin-top:12px;margin-bottom:4px;">Consignments on this Trip ({{ bilties|length }})</h3>
+		<table class="items">
+			<thead>
+				<tr><th style="width:12%;">Bilty</th><th>Customer</th><th>Origin</th><th>Destination</th>
+					<th style="width:10%;text-align:right;">Gross Wt</th><th style="width:8%;text-align:right;">Pkgs</th>
+					<th style="width:12%;text-align:right;">Amount</th></tr>
+			</thead>
+			<tbody>
+				{% for b in bilties %}
+				<tr>
+					<td>{{ b.name }}</td>
+					<td>{{ b.customer_name }}</td>
+					<td>{{ b.origin }}</td>
+					<td>{{ b.destination }}</td>
+					<td style="text-align:right;">{{ "%.2f"|format(b.total_gross_weight or 0) }}</td>
+					<td style="text-align:right;">{{ b.total_packages or 0 }}</td>
+					<td style="text-align:right;">{{ frappe.utils.fmt_money(b.grand_total, currency=b.currency) }}</td>
+				</tr>
+				{% else %}
+				<tr><td colspan="7" style="text-align:center;color:#888;">No bilties on this trip.</td></tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		{% if advances %}
+		<h3 style="margin-top:12px;margin-bottom:4px;">Advances</h3>
+		<table class="items">
+			<thead><tr><th>#</th><th>Date</th><th>Receiver</th><th style="text-align:right;">Amount</th></tr></thead>
+			<tbody>
+				{% for a in advances %}
+				<tr><td>{{ a.name }}</td><td>{{ frappe.utils.formatdate(a.advance_date) }}</td>
+					<td>{{ a.receiver_name or "—" }}</td>
+					<td style="text-align:right;">{{ frappe.utils.fmt_money(a.amount, currency=doc.currency) }}</td></tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% endif %}
+
+		<div class="grid" style="margin-top:10px;">
+			<div class="cell box" style="width:50%;">
+				<span class="label">Agreed Vehicle Hire</span><br/>
+				<div class="value">{{ frappe.utils.fmt_money(doc.agreed_vehicle_hire or 0, currency=doc.currency) }}</div>
+				<span class="label" style="margin-top:4px;">Driver Allowance</span><br/>
+				<div>{{ frappe.utils.fmt_money(doc.driver_allowance or 0, currency=doc.currency) }}</div>
+			</div>
+			<div class="cell box" style="width:50%;">
+				<span class="label">Instructions / Remarks</span><br/>
+				<div>{{ doc.remarks or "" }}</div>
+			</div>
+		</div>
+
+		<div class="grid" style="margin-top:24px;">
+			<div class="cell" style="width:33%;"><div class="sig">Dispatcher</div></div>
+			<div class="cell" style="width:33%;"><div class="sig">Driver</div></div>
+			<div class="cell" style="width:34%;"><div class="sig">Vehicle Handover</div></div>
+		</div>
+	</div>
+</div>
