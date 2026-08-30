@@ -11,3 +11,4 @@ goods_transport.patches.v1_0.install_accounting_dimensions
 goods_transport.patches.v1_0.install_dashboard
 goods_transport.patches.v1_0.install_workspace
 goods_transport.patches.v1_0.install_cargo_masters
+goods_transport.patches.v1_0.refresh_print_formats
