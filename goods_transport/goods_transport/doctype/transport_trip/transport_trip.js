@@ -10,18 +10,84 @@ const TRIP_STATUSES = [
 	"Closed",
 ];
 
+const PENDING_ORDER_STATUSES = ["Confirmed", "Partially Dispatched"];
+
 frappe.ui.form.on("Transport Trip", {
+	setup(frm) {
+		// Trip's freight_item is the SI freight line item for every Bilty on
+		// this trip. Filter to the seeded Freight Services group.
+		frm.set_query("freight_item", () => ({
+			filters: { item_group: "Freight Services" },
+		}));
+	},
 	refresh(frm) {
 		if (frm.doc.docstatus === 1 && frm.doc.status !== "Cancelled" && frm.doc.status !== "Closed") {
 			frm.add_custom_button(
 				__("Bilty"),
 				() => {
-					const d = new frappe.ui.Dialog({
+					let d;
+					d = new frappe.ui.Dialog({
 						title: __("Create Bilty under {0}", [frm.doc.name]),
 						fields: [
-							{ fieldname: "customer", label: __("Customer"), fieldtype: "Link", options: "Customer", reqd: 1 },
-							{ fieldname: "transport_order", label: __("Transport Order"), fieldtype: "Link", options: "Transport Order" },
-							{ fieldname: "freight_item", label: __("Freight Item"), fieldtype: "Link", options: "Item", reqd: 1 },
+							{
+								fieldname: "customer",
+								label: __("Customer"),
+								fieldtype: "Link",
+								options: "Customer",
+								reqd: 1,
+								onchange: () => {
+									// Reset order — old value would belong to the previous customer.
+									if (d.get_value("transport_order")) {
+										d.set_value("transport_order", "");
+									}
+								},
+							},
+							{
+								fieldname: "transport_order",
+								label: __("Transport Order"),
+								fieldtype: "Link",
+								options: "Transport Order",
+								description: __(
+									"Only submitted, still-open orders (Confirmed / Partially Dispatched) for the selected customer are shown.",
+								),
+								get_query: () => {
+									const customer = d.get_value("customer");
+									const filters = {
+										docstatus: 1,
+										status: ["in", PENDING_ORDER_STATUSES],
+										company: frm.doc.company,
+									};
+									if (customer) {
+										filters.customer = customer;
+									}
+									return { filters };
+								},
+								onchange: async () => {
+									const order = d.get_value("transport_order");
+									if (!order) return;
+									const r = await frappe.db.get_value(
+										"Transport Order",
+										order,
+										["rate", "rate_basis"],
+									);
+									const vals = (r && r.message) || {};
+									if (vals.rate_basis && !d.get_value("rate_basis")) {
+										d.set_value("rate_basis", vals.rate_basis);
+									}
+									if (vals.rate && !d.get_value("rate")) {
+										d.set_value("rate", vals.rate);
+									}
+								},
+							},
+							{
+								fieldname: "freight_item",
+								label: __("Freight Item"),
+								fieldtype: "Link",
+								options: "Item",
+								reqd: 1,
+								default: frm.doc.freight_item || "",
+								get_query: () => ({ filters: { item_group: "Freight Services" } }),
+							},
 							{
 								fieldname: "rate_basis",
 								label: __("Rate Basis"),

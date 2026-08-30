@@ -67,7 +67,7 @@ class Bilty(Document):
 		trip = frappe.db.get_value(
 			"Transport Trip",
 			self.transport_trip,
-			["vehicle", "vehicle_license_plate", "driver", "transporter", "company", "origin", "destination"],
+			["vehicle", "vehicle_license_plate", "driver", "transporter", "company", "origin", "destination", "freight_item"],
 			as_dict=True,
 		)
 		if not trip:
@@ -80,6 +80,10 @@ class Bilty(Document):
 		self.vehicle_license_plate = self.vehicle_license_plate or trip.vehicle_license_plate
 		self.driver = self.driver or trip.driver
 		self.transporter = self.transporter or trip.transporter
+		# Freight service Item: Trip carries the default for its whole journey;
+		# every Bilty billed off this Trip goes through the same SI line item
+		# unless the user overrides on the Bilty itself.
+		self.freight_item = self.freight_item or trip.freight_item
 
 	def _inherit_from_order(self):
 		if not self.transport_order:
@@ -87,7 +91,11 @@ class Bilty(Document):
 		order = frappe.db.get_value(
 			"Transport Order",
 			self.transport_order,
-			["customer", "company", "origin", "destination", "loading_location", "delivery_location", "pod_required", "commodity", "currency"],
+			[
+				"customer", "company", "origin", "destination", "loading_location",
+				"delivery_location", "pod_required", "commodity", "currency",
+				"rate_basis", "rate",
+			],
 			as_dict=True,
 		)
 		if not order:
@@ -106,6 +114,12 @@ class Bilty(Document):
 			self.currency = order.currency
 		if order.pod_required and not self.pod_required:
 			self.pod_required = 1
+		# Commercial terms (rate, rate_basis) are resolved by the calling
+		# service — the JS "Create Bilty" dialog and create_bilty_from_trip
+		# both pull from the Order at their entry point. Not inherited here
+		# because rate_basis is a reqd Select that auto-defaults to the first
+		# option ("Per Trip"), which would defeat a `not self.rate_basis`
+		# check on validate().
 
 	# --- helpers ---------------------------------------------------------
 

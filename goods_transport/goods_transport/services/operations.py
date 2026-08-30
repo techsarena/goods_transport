@@ -60,8 +60,24 @@ def create_bilty_from_trip(
 	bilty.transporter = trip.transporter
 	bilty.currency = trip.currency
 
-	if freight_item:
-		bilty.freight_item = freight_item
+	# Freight item: use the explicit param, else fall back to Trip.freight_item
+	# (Trip owns the SI freight service for all bilties on its journey).
+	bilty.freight_item = freight_item or trip.freight_item
+
+	# Commercial terms: if the caller (dialog/API) didn't pass a rate or
+	# rate_basis and a Transport Order is linked, pull them from the Order.
+	# The JS dialog already prefills these on order-change; this path covers
+	# scripted/API callers that skip the dialog.
+	if transport_order and (rate is None or rate_basis is None):
+		order = frappe.db.get_value(
+			"Transport Order", transport_order, ["rate", "rate_basis"], as_dict=True
+		)
+		if order:
+			if rate is None and order.rate:
+				rate = order.rate
+			if rate_basis is None and order.rate_basis:
+				rate_basis = order.rate_basis
+
 	if rate is not None:
 		bilty.rate = flt(rate)
 	if rate_basis:
