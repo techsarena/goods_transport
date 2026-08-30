@@ -17,7 +17,7 @@ frappe.ui.form.on("Transport Trip", {
 		// Trip's freight_item is the SI freight line item for every Bilty on
 		// this trip. Filter to the seeded Freight Services group.
 		frm.set_query("freight_item", () => ({
-			filters: { item_group: "Freight Services" },
+			filters: { item_group: "Freight Items" },
 		}));
 	},
 	refresh(frm) {
@@ -86,7 +86,7 @@ frappe.ui.form.on("Transport Trip", {
 								options: "Item",
 								reqd: 1,
 								default: frm.doc.freight_item || "",
-								get_query: () => ({ filters: { item_group: "Freight Services" } }),
+								get_query: () => ({ filters: { item_group: "Freight Items" } }),
 							},
 							{
 								fieldname: "rate_basis",

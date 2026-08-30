@@ -97,7 +97,7 @@ Public workspace at `/app/goods-transport` with:
 ### Master data seeded on install
 
 - Supplier Group: `Transporter`
-- Item Group: `Freight Services`
+- Item Group: `Freight Items`
 - Freight-service Items: Freight, Loading, Unloading, Toll Recovery, Detention, Documentation, Weighbridge, Labour, Night Delivery, Handling, Vehicle Hire
 - Item Group: `Cargo Items` (marked as a group so users can add sub-classifications)
 - Cargo-classification Items: `CARGO-CONTAINER` (Nos), `CARGO-STEEL-COIL` (Nos), `CARGO-TRANSFORMER` (Nos), `CARGO-MACHINE` (Nos), `CARGO-VEHICLE` (Nos), `CARGO-CEMENT` (Kg), `CARGO-CHEMICALS` (Kg), `CARGO-TEXTILE-GOODS` (Kg), `CARGO-FOOD-PRODUCTS` (Kg), `CARGO-GENERAL` (Kg)
@@ -113,8 +113,8 @@ the customer is billed for** (freight and additional charges).
 | Section | Purpose | Item source |
 |---|---|---|
 | **Cargo** (`Bilty.items`, `Transport Order.commodity`) | Physical classification of the goods on the trip. Never invoiced as-is. | `Cargo Items` group + any descendant groups the customer adds |
-| **Freight** (`Bilty.freight_item` + rate/basis) | The primary transportation service line on the Sales Invoice. | `Freight Services` group |
-| **Additional Charges** (`Bilty.charges`) | Supplementary billable/internal services (loading, labour, detention…). | `Freight Services` group |
+| **Freight** (`Bilty.freight_item` + rate/basis) | The primary transportation service line on the Sales Invoice. | `Freight Items` group |
+| **Additional Charges** (`Bilty.charges`) | Supplementary billable/internal services (loading, labour, detention…). | `Freight Items` group |
 
 **Cargo Items** are seeded broad, non-transactional classifications:
 `is_stock_item = 0`, `is_sales_item = 0`, `is_purchase_item = 0`. Shipment

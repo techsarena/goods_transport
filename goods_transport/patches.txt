@@ -13,3 +13,4 @@ goods_transport.patches.v1_0.install_workspace
 goods_transport.patches.v1_0.install_cargo_masters
 goods_transport.patches.v1_0.refresh_print_formats
 goods_transport.patches.v1_1.seed_trip_expense_types
+goods_transport.patches.v1_2.rename_freight_services_to_freight_items

@@ -2,7 +2,8 @@
 
 Freight-service side (customer invoice + trip expense lines):
 - Supplier Group 'Transporter'
-- Item Group 'Freight Services'
+- Item Group 'Freight Items' (renamed from 'Freight Services' — see
+  patches/v1_2/rename_freight_services_to_freight_items.py)
 - Freight-charge Items (Freight, Loading, Unloading, Toll Recovery,
   Detention, Documentation, Weighbridge, Labour, Night Delivery, Handling,
   Vehicle Hire)
@@ -164,11 +165,11 @@ def _ensure_supplier_group():
 def _ensure_item_group():
 	if not frappe.db.exists("Item Group", "All Item Groups"):
 		return
-	if not frappe.db.exists("Item Group", "Freight Services"):
+	if not frappe.db.exists("Item Group", "Freight Items"):
 		frappe.get_doc(
 			{
 				"doctype": "Item Group",
-				"item_group_name": "Freight Services",
+				"item_group_name": "Freight Items",
 				"parent_item_group": "All Item Groups",
 				"is_group": 0,
 			}
@@ -176,7 +177,7 @@ def _ensure_item_group():
 
 
 def _ensure_freight_items():
-	if not frappe.db.exists("Item Group", "Freight Services"):
+	if not frappe.db.exists("Item Group", "Freight Items"):
 		return
 	if not frappe.db.exists("UOM", "Nos"):
 		return
@@ -188,7 +189,7 @@ def _ensure_freight_items():
 				"doctype": "Item",
 				"item_code": spec["code"],
 				"item_name": spec["name"],
-				"item_group": "Freight Services",
+				"item_group": "Freight Items",
 				"stock_uom": "Nos",
 				"is_stock_item": 0,
 				"is_sales_item": 1,
