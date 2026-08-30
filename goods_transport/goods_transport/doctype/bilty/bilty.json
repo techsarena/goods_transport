@@ -217,16 +217,16 @@
    "fieldtype": "Column Break"
   },
   {
+   "description": "Specific loading point within the origin (address, gate, building, etc.). Free-text — the general place is Origin above.",
    "fieldname": "loading_location",
-   "fieldtype": "Link",
-   "label": "Loading Location",
-   "options": "Transport Location"
+   "fieldtype": "Small Text",
+   "label": "Loading Location"
   },
   {
+   "description": "Specific delivery point within the destination (address, gate, building, etc.). Free-text — the general place is Destination above.",
    "fieldname": "delivery_location",
-   "fieldtype": "Link",
-   "label": "Delivery Location",
-   "options": "Transport Location"
+   "fieldtype": "Small Text",
+   "label": "Delivery Location"
   },
   {
    "collapsible": 1,

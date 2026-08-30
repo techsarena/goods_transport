@@ -144,8 +144,8 @@
    "reqd": 1
   },
   {"fieldname": "column_break_r1", "fieldtype": "Column Break"},
-  {"fieldname": "loading_location", "fieldtype": "Link", "label": "Loading Location", "options": "Transport Location"},
-  {"fieldname": "delivery_location", "fieldtype": "Link", "label": "Delivery Location", "options": "Transport Location"},
+  {"description": "Specific loading point within the origin (address, gate, building, etc.). Free-text.", "fieldname": "loading_location", "fieldtype": "Small Text", "label": "Loading Location"},
+  {"description": "Specific delivery point within the destination (address, gate, building, etc.). Free-text.", "fieldname": "delivery_location", "fieldtype": "Small Text", "label": "Delivery Location"},
   {"collapsible": 1, "fieldname": "schedule_section", "fieldtype": "Section Break", "label": "Schedule"},
   {"fieldname": "expected_loading_date", "fieldtype": "Date", "label": "Expected Loading Date"},
   {"fieldname": "column_break_s1", "fieldtype": "Column Break"},
