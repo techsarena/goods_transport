@@ -94,6 +94,13 @@ class TripSettlement(Document):
 		)
 
 	def _compute_final(self):
+		# Cost model — planned Driver Allowance is intentionally NOT part of
+		# total_cost. Actual driver allowance is recorded as a submitted Trip
+		# Expense with expense_type='Driver Allowance' and rolls up through
+		# `total_expenses`. driver_allowance on the header is a planning /
+		# budgeting reference and is shown separately in the settlement print
+		# for comparison; it must not be added here or the actual + planned
+		# allowance would be double-counted.
 		self.total_cost = flt(self.vehicle_hire) + flt(self.total_expenses)
 		self.gross_profit = flt(self.total_revenue) - flt(self.total_cost)
 		self.margin_percent = (self.gross_profit / self.total_revenue * 100) if self.total_revenue else 0

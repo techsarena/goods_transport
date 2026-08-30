@@ -9,6 +9,27 @@ class TripExpense(Document):
 		self._validate_trip_open()
 		self._validate_recoverable()
 
+	def before_submit(self):
+		# Draft can be saved without a receipt; the requirement only bites at
+		# submission so the ops team can capture the entry immediately in the
+		# field and attach the receipt later.
+		self._validate_receipt_before_submit()
+
+	def _validate_receipt_before_submit(self):
+		if not self.expense_type:
+			return
+		if self.receipt:
+			return
+		requires_receipt = frappe.db.get_value(
+			"Trip Expense Type", self.expense_type, "requires_receipt"
+		)
+		if requires_receipt:
+			frappe.throw(
+				_("A receipt is required before submitting a Trip Expense of type {0}.").format(
+					frappe.bold(self.expense_type)
+				)
+			)
+
 	def on_submit(self):
 		if self.payment_mode == "Company Cash/Bank":
 			self.journal_entry = self._create_cash_journal_entry()

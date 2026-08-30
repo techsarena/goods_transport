@@ -63,11 +63,77 @@ CARGO_ITEM_DESCRIPTION = (
 )
 
 
+DEFAULT_TRIP_EXPENSE_TYPES = [
+	# (name, requires_receipt, billable_by_default, description)
+	{
+		"name": "Fuel",
+		"requires_receipt": 1,
+		"billable_by_default": 0,
+		"description": "Diesel, petrol, CNG, or other vehicle fuel.",
+	},
+	{
+		"name": "Driver Food",
+		"requires_receipt": 0,
+		"billable_by_default": 0,
+		"description": "Meals and food provided during the Trip.",
+	},
+	{
+		"name": "Tyre Repair",
+		"requires_receipt": 1,
+		"billable_by_default": 0,
+		"description": "Puncture repair, tyre replacement, tube, or tyre-related work.",
+	},
+	{
+		"name": "Vehicle Repair",
+		"requires_receipt": 1,
+		"billable_by_default": 0,
+		"description": "Mechanical, electrical, roadside, or workshop repair.",
+	},
+	{
+		"name": "Traffic Challan",
+		"requires_receipt": 1,
+		"billable_by_default": 0,
+		"description": (
+			"Traffic fines or challans incurred during the Trip. Not billable to customer by default; "
+			"cost allocation between company, driver, or transporter follows company policy."
+		),
+	},
+	{
+		"name": "Driver Allowance",
+		"requires_receipt": 0,
+		"billable_by_default": 0,
+		"description": (
+			"Actual allowance paid or consumed for the Trip. Distinct from the planned "
+			"driver_allowance field on Transport Trip which is informational only — Trip "
+			"Settlement's total_cost sums actual Trip Expenses, not the planned value, so "
+			"recording an actual Driver Allowance here does not double-count."
+		),
+	},
+	{
+		"name": "Other Trip Expense",
+		"requires_receipt": 1,
+		"billable_by_default": 0,
+		"description": "Exceptional Trip expenses not covered by another type.",
+	},
+]
+
+
 def install_transport_masters():
 	_ensure_supplier_group()
 	_ensure_item_group()
 	_ensure_freight_items()
 	install_cargo_item_group_and_items()
+	install_trip_expense_types()
+	frappe.db.commit()
+
+
+def install_trip_expense_types():
+	"""Idempotent seeder for the seven default Trip Expense Type records.
+
+	Exposed as a standalone entry point so migration patches can call it
+	without re-touching other masters. Skips any name that already exists —
+	user modifications and user-created types are preserved untouched."""
+	_ensure_trip_expense_types()
 	frappe.db.commit()
 
 
@@ -144,6 +210,32 @@ def _ensure_cargo_item_group():
 				# 'Perishable Food' under 'Food Products') without breaking
 				# the cargo filter, which matches root + descendants.
 				"is_group": 1,
+			}
+		).insert(ignore_permissions=True)
+
+
+def _ensure_trip_expense_types():
+	if not frappe.db.exists("DocType", "Trip Expense Type"):
+		# Fresh install order: caller must run the DocType sync first. Skip
+		# quietly rather than error out during a partial migrate.
+		return
+	for spec in DEFAULT_TRIP_EXPENSE_TYPES:
+		if frappe.db.exists("Trip Expense Type", spec["name"]):
+			# Preserve user modifications — do not overwrite requires_receipt,
+			# billable_by_default, or default account/item once the record exists.
+			continue
+		frappe.get_doc(
+			{
+				"doctype": "Trip Expense Type",
+				"expense_type_name": spec["name"],
+				"is_active": 1,
+				"requires_receipt": spec["requires_receipt"],
+				"billable_by_default": spec["billable_by_default"],
+				"description": spec["description"],
+				# default_expense_account / default_item intentionally left
+				# empty — company-specific and require a valid account for the
+				# Trip's company; users pick per-company on the Expense Type
+				# record after install.
 			}
 		).insert(ignore_permissions=True)
 

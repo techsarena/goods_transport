@@ -101,6 +101,7 @@ Public workspace at `/app/goods-transport` with:
 - Freight-service Items: Freight, Loading, Unloading, Toll Recovery, Detention, Documentation, Weighbridge, Labour, Night Delivery, Handling, Vehicle Hire
 - Item Group: `Cargo Items` (marked as a group so users can add sub-classifications)
 - Cargo-classification Items: `CARGO-CONTAINER` (Nos), `CARGO-STEEL-COIL` (Nos), `CARGO-TRANSFORMER` (Nos), `CARGO-MACHINE` (Nos), `CARGO-VEHICLE` (Nos), `CARGO-CEMENT` (Kg), `CARGO-CHEMICALS` (Kg), `CARGO-TEXTILE-GOODS` (Kg), `CARGO-FOOD-PRODUCTS` (Kg), `CARGO-GENERAL` (Kg)
+- Trip Expense Types: `Fuel`, `Driver Food`, `Tyre Repair`, `Vehicle Repair`, `Traffic Challan`, `Driver Allowance`, `Other Trip Expense` — flags per the section below
 
 ---
 
@@ -160,6 +161,96 @@ Options:
 
 Existing **submitted** documents remain readable without change — validation
 runs only on save/submit/amend, not on load.
+
+---
+
+## Trip Expense Types
+
+Seven default expense classifications ship with the app so users record
+actual trip costs with consistent categorisation instead of free-text
+like "fuel", "Diesel", "diesel expense":
+
+| Expense Type | Requires Receipt | Billable by Default | Intended use |
+|---|:-:|:-:|---|
+| Fuel | Yes | No | Diesel, petrol, CNG, or other vehicle fuel |
+| Driver Food | No | No | Meals and food provided during the Trip |
+| Tyre Repair | Yes | No | Puncture repair, tyre replacement, tube, or tyre-related work |
+| Vehicle Repair | Yes | No | Mechanical, electrical, roadside, or workshop repair |
+| Traffic Challan | Yes | No | Traffic fines or challans incurred during the Trip |
+| Driver Allowance | No | No | Actual allowance paid or consumed for the Trip |
+| Other Trip Expense | Yes | No | Exceptional Trip expenses not covered by another type |
+
+Seeded records ship with `default_expense_account` and `default_item`
+empty because ERPNext Account names carry a company abbreviation and
+cannot be seeded generically. Set the per-company defaults on the Trip
+Expense Type record itself; the Trip Expense form only prefills the
+expense account when the type's default belongs to the Trip's company.
+
+### Payment modes → accounting document
+
+The Payment Mode picked on a Trip Expense drives the ERPNext side-effect:
+
+- **Company Cash/Bank** → Journal Entry, Dr Expense / Cr Cash-or-Bank, tagged with the Trip.
+- **Trip Advance** → Journal Entry, Dr Expense / Cr the linked Trip Advance's advance account. Consumes the advance, which reduces the Trip Settlement's `advance_balance`.
+- **Third-Party Bill** → draft Purchase Invoice to the supplier for review and submission. Cancelling the Trip Expense cancels the underlying invoice too.
+
+### Receipt requirement
+
+Trip Expense Types marked `requires_receipt = 1` (Fuel, Tyre Repair,
+Vehicle Repair, Traffic Challan, Other Trip Expense) enforce a receipt
+attachment **at submission**. Draft save without a receipt is still
+allowed so ops can capture the entry in the field and attach the
+document later. Error message names the type: *"A receipt is required
+before submitting a Trip Expense of type Fuel."*
+
+### Trip Advance vs Trip Expense
+
+A **Trip Advance** is *cash issued* to a driver / employee / supplier —
+it is NOT an expense on its own. It debits the advance account and
+credits cash.
+
+The expense is recognised only when a submitted **Trip Expense** with
+Payment Mode = "Trip Advance" records how that advance was consumed:
+
+```
+Trip Advance issued:                        30,000
+  Trip Expense - Fuel (from advance):       12,000
+  Trip Expense - Driver Food (from adv):     2,000
+  Trip Expense - Tyre Repair (from adv):     3,000
+  ---------------------------------------------
+  Consumed from advance:                    17,000
+  Remaining advance balance:                13,000
+```
+
+Trip Settlement's `consumed_from_advance` = sum of Trip Expense amounts
+paid via Trip Advance. `advance_balance = paid − consumed`. When the
+driver returns cash, enter it in `cash_returned` on the settlement to
+compute `outstanding_from_driver`.
+
+### Planned vs actual Driver Allowance
+
+Two related but distinct concepts intentionally kept separate:
+
+- **`Transport Trip.driver_allowance`** — planned/budgeted allowance,
+  informational only. Shown on the Trip Settlement print for comparison,
+  but **NOT added into `total_cost`**.
+- **Submitted Trip Expense with `expense_type = "Driver Allowance"`** —
+  actual amount paid or consumed. This is what feeds `total_expenses`
+  and therefore `total_cost` on the settlement.
+
+This split guarantees the same allowance is never double-counted.
+Recording an actual Driver Allowance expense of ₨3,000 on a trip whose
+planned `driver_allowance = 3,000` yields `total_expenses = 3,000` —
+not 6,000. The test suite
+(`test_trip_expense_types.TestTripSettlementNoDoubleCount`) locks this in.
+
+### Traffic Challan handling
+
+Traffic Challan is seeded because it is a real cash movement that
+needs Trip reconciliation, but ships with `billable_by_default = 0`.
+Do not automatically pass it through as a customer charge; policy
+typically splits it between company, driver, or transporter and
+belongs in a separate review flow.
 
 ---
 
