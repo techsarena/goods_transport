@@ -16,6 +16,7 @@
  ],
  "fields": [
   {
+   "columns": 2,
    "fieldname": "item",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -29,11 +30,15 @@
    "label": "Item Name"
   },
   {
+   "columns": 3,
+   "description": "Shipment-specific detail: container / seal number, serial number, dimensions, hazardous class, special handling, etc.",
    "fieldname": "description",
    "fieldtype": "Small Text",
+   "in_list_view": 1,
    "label": "Description"
   },
   {
+   "columns": 1,
    "fieldname": "quantity",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -42,6 +47,7 @@
    "reqd": 1
   },
   {
+   "columns": 1,
    "fetch_from": "item.stock_uom",
    "fetch_if_empty": 1,
    "fieldname": "uom",
@@ -51,6 +57,7 @@
    "options": "UOM"
   },
   {
+   "columns": 1,
    "fieldname": "packages",
    "fieldtype": "Int",
    "in_list_view": 1,
@@ -58,6 +65,7 @@
    "non_negative": 1
   },
   {
+   "columns": 2,
    "fieldname": "gross_weight",
    "fieldtype": "Float",
    "in_list_view": 1,
