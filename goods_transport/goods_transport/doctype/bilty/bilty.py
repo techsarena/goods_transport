@@ -3,6 +3,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
 
+from goods_transport.goods_transport.services.cargo import validate_cargo_item
+
 
 class Bilty(Document):
 	def validate(self):
@@ -10,6 +12,7 @@ class Bilty(Document):
 		self._default_currency()
 		self._inherit_from_trip()
 		self._inherit_from_order()
+		self._validate_cargo_items()
 		self._compute_item_totals()
 		self._compute_charges()
 		self._compute_freight_amount()
@@ -17,6 +20,13 @@ class Bilty(Document):
 		self._resolve_rate_contract()
 		self._set_pod_status()
 		self._set_status()
+
+	def _validate_cargo_items(self):
+		# Server-side enforcement for every cargo row. Freight and additional
+		# service Items live elsewhere on this doc; they must not leak in here
+		# via imports, APIs, or scripts.
+		for row in self.items or []:
+			validate_cargo_item(row.item, row_idx=row.idx)
 
 	def before_submit(self):
 		self._snapshot_vehicle_plate()

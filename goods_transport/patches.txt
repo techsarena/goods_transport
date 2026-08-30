@@ -10,3 +10,4 @@ goods_transport.patches.v1_0.install_bilty_print_format
 goods_transport.patches.v1_0.install_accounting_dimensions
 goods_transport.patches.v1_0.install_dashboard
 goods_transport.patches.v1_0.install_workspace
+goods_transport.patches.v1_0.install_cargo_masters

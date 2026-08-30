@@ -1,4 +1,12 @@
 frappe.ui.form.on("Bilty", {
+	setup(frm) {
+		// Cargo grid: only physical-cargo Items (Cargo Items group + descendants).
+		// Applied via set_query on the child field so it fires on the row picker
+		// every time the user adds or edits a row. Server-side validate() enforces.
+		frm.set_query("item", "items", () => ({
+			query: "goods_transport.goods_transport.services.cargo.cargo_item_query",
+		}));
+	},
 	refresh(frm) {
 		if (
 			frm.doc.docstatus === 1 &&

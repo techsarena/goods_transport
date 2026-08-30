@@ -1,4 +1,12 @@
 frappe.ui.form.on("Transport Order", {
+	setup(frm) {
+		// Commodity must be a physical-cargo Item — filter picker to the
+		// Cargo Items group and its descendants. Server-side validate() is
+		// the actual enforcement; this is the UX hint.
+		frm.set_query("commodity", () => ({
+			query: "goods_transport.goods_transport.services.cargo.cargo_item_query",
+		}));
+	},
 	refresh(frm) {
 		if (frm.doc.docstatus === 1 && frm.doc.status !== "Cancelled") {
 			frm.add_custom_button(

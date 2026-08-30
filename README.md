@@ -98,7 +98,68 @@ Public workspace at `/app/goods-transport` with:
 
 - Supplier Group: `Transporter`
 - Item Group: `Freight Services`
-- Items: Freight, Loading, Unloading, Toll Recovery, Detention, Documentation, Weighbridge, Labour, Night Delivery, Handling, Vehicle Hire
+- Freight-service Items: Freight, Loading, Unloading, Toll Recovery, Detention, Documentation, Weighbridge, Labour, Night Delivery, Handling, Vehicle Hire
+- Item Group: `Cargo Items` (marked as a group so users can add sub-classifications)
+- Cargo-classification Items: `CARGO-CONTAINER` (Nos), `CARGO-STEEL-COIL` (Nos), `CARGO-TRANSFORMER` (Nos), `CARGO-MACHINE` (Nos), `CARGO-VEHICLE` (Nos), `CARGO-CEMENT` (Kg), `CARGO-CHEMICALS` (Kg), `CARGO-TEXTILE-GOODS` (Kg), `CARGO-FOOD-PRODUCTS` (Kg), `CARGO-GENERAL` (Kg)
+
+---
+
+## Cargo vs Freight vs Additional Charges
+
+The app draws a hard line between **what is being moved** (cargo) and **what
+the customer is billed for** (freight and additional charges).
+
+| Section | Purpose | Item source |
+|---|---|---|
+| **Cargo** (`Bilty.items`, `Transport Order.commodity`) | Physical classification of the goods on the trip. Never invoiced as-is. | `Cargo Items` group + any descendant groups the customer adds |
+| **Freight** (`Bilty.freight_item` + rate/basis) | The primary transportation service line on the Sales Invoice. | `Freight Services` group |
+| **Additional Charges** (`Bilty.charges`) | Supplementary billable/internal services (loading, labour, detention…). | `Freight Services` group |
+
+**Cargo Items** are seeded broad, non-transactional classifications:
+`is_stock_item = 0`, `is_sales_item = 0`, `is_purchase_item = 0`. Shipment
+specifics (container number, seal, machine serial, hazardous class, coil
+count, loading instructions, …) go in the row's **Description** field, not
+in the Item master:
+
+```
+Item: Transformer
+Description: 20 MVA power transformer, serial TR-9087, crane required
+Quantity: 1 Nos
+Gross Weight: 18,000 kg
+
+Item: Container
+Description: 40-foot high-cube container, ABCD-1234567, seal 90845
+Quantity: 1 Nos
+Gross Weight: 24,000 kg
+```
+
+This separation is enforced two ways:
+
+1. **Client-side** — `Bilty.items.item` and `Transport Order.commodity`
+   Link pickers use a `get_query` that only returns enabled Items whose Item
+   Group is `Cargo Items` or a descendant. Users don't see Freight, Labour,
+   or Vehicle Hire in the cargo picker.
+2. **Server-side** — `validate()` on both DocTypes calls
+   `services/cargo.py :: validate_cargo_item`. This catches imports, API
+   calls, background jobs, and any other write path. The error identifies
+   the offending row.
+
+Descendant Item Groups under `Cargo Items` (e.g. a user-added
+`Perishables → Frozen Fish`) are accepted automatically because the check
+uses the ERPNext nested-set descendants lookup.
+
+### Migration note for existing installs
+
+Sites that already have Bilty or Transport Order documents where the cargo
+field references a non-cargo Item will fail validation on the next save.
+Options:
+
+1. Move the affected Items into the `Cargo Items` group, or
+2. Create new Cargo Items via the Item Group and update the cargo rows
+   before saving.
+
+Existing **submitted** documents remain readable without change — validation
+runs only on save/submit/amend, not on load.
 
 ---
 

@@ -3,12 +3,20 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
 
+from goods_transport.goods_transport.services.cargo import validate_cargo_item
+
 
 class TransportOrder(Document):
 	def validate(self):
 		self._default_currency()
+		self._validate_commodity_is_cargo()
 		self._compute_estimated_totals()
 		self._set_status_draft_time()
+
+	def _validate_commodity_is_cargo(self):
+		# Server-side gate: covers imports, APIs, background jobs — not just the
+		# form. Client-side get_query is a UX hint; this is the enforcement.
+		validate_cargo_item(self.commodity)
 
 	def on_submit(self):
 		if not self.status or self.status == "Draft":
