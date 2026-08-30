@@ -5,7 +5,29 @@ app_description = "Accounting for goods transport"
 app_email = "info@techsarena.com"
 app_license = "mit"
 
+# Driver payroll links to Salary Component / Salary Structure, so HRMS must be
+# installed first. Org-qualified so parse_app_name() resolves locally instead of
+# calling the GitHub API.
+required_apps = ["frappe/erpnext", "frappe/hrms"]
+
 after_install = "goods_transport.install.after_install"
+
+# Form scripts
+doctype_js = {
+	"Transport Trip": "public/js/transport_trip.js",
+	"Driver": "public/js/driver.js",
+}
+
+# Trip lifecycle -> driver earnings
+doc_events = {
+	"Trip Settlement": {
+		"validate": "goods_transport.goods_transport.services.settlement.attach_driver_pay",
+		"on_submit": "goods_transport.goods_transport.services.earnings.on_trip_settlement_submit",
+	},
+	"Transport Trip": {
+		"on_cancel": "goods_transport.goods_transport.services.earnings.on_trip_cancel",
+	},
+}
 
 fixtures = [
 	{

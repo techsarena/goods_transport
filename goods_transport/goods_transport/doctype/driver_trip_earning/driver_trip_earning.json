@@ -1,0 +1,303 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-08-30 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "driver",
+  "driver_name",
+  "employee",
+  "employee_name",
+  "cb_h1",
+  "company",
+  "trip",
+  "trip_date",
+  "status",
+  "basis_section",
+  "pay_rule",
+  "route",
+  "vehicle",
+  "cb_b1",
+  "distance_km",
+  "loaded_tons",
+  "trip_revenue",
+  "amounts_section",
+  "trip_amount",
+  "km_amount",
+  "cb_a1",
+  "tonnage_amount",
+  "commission_amount",
+  "total_section",
+  "total_earning",
+  "currency",
+  "payroll_section",
+  "payroll_run",
+  "cb_p1",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "default": "DTE-.YYYY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "DTE-.YYYY.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Driver",
+   "options": "Driver",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fetch_from": "driver.full_name",
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Driver Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_h1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "trip",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Transport Trip",
+   "options": "Transport Trip",
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "trip_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Trip Date",
+   "read_only": 1
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Pending\nProcessed\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "basis_section",
+   "fieldtype": "Section Break",
+   "label": "Basis"
+  },
+  {
+   "fieldname": "pay_rule",
+   "fieldtype": "Link",
+   "label": "Pay Rule",
+   "options": "Driver Pay Rule",
+   "read_only": 1
+  },
+  {
+   "fieldname": "route",
+   "fieldtype": "Link",
+   "label": "Route",
+   "options": "Transport Route",
+   "read_only": 1
+  },
+  {
+   "fieldname": "vehicle",
+   "fieldtype": "Link",
+   "label": "Vehicle",
+   "options": "Vehicle",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_b1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "distance_km",
+   "fieldtype": "Float",
+   "label": "Distance (KM)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "loaded_tons",
+   "fieldtype": "Float",
+   "label": "Loaded (Tons)",
+   "precision": "3",
+   "read_only": 1
+  },
+  {
+   "fieldname": "trip_revenue",
+   "fieldtype": "Currency",
+   "label": "Trip Freight Revenue",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amounts_section",
+   "fieldtype": "Section Break",
+   "label": "Earnings"
+  },
+  {
+   "fieldname": "trip_amount",
+   "fieldtype": "Currency",
+   "label": "Trip Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "km_amount",
+   "fieldtype": "Currency",
+   "label": "Distance Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_a1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tonnage_amount",
+   "fieldtype": "Currency",
+   "label": "Tonnage Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission_amount",
+   "fieldtype": "Currency",
+   "label": "Commission Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "bold": 1,
+   "fieldname": "total_earning",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Earning",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "payroll_section",
+   "fieldtype": "Section Break",
+   "label": "Payroll"
+  },
+  {
+   "fieldname": "payroll_run",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Driver Payroll Run",
+   "options": "Driver Payroll Run",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_p1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-30 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Goods Transport",
+ "name": "Driver Trip Earning",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "share": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "trip_date",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "driver_name",
+ "track_changes": 1
+}

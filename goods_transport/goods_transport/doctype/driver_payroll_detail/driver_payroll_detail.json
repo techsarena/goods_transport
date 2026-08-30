@@ -1,0 +1,190 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-08-30 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "driver",
+  "driver_name",
+  "employee",
+  "employee_name",
+  "pay_rule",
+  "trips",
+  "sb_earn",
+  "trip_amount",
+  "km_amount",
+  "cb_e",
+  "tonnage_amount",
+  "commission_amount",
+  "cb_e2",
+  "gross_earning",
+  "sb_rec",
+  "outstanding_advance",
+  "cb_r",
+  "advance_recovery",
+  "cb_r2",
+  "net_addition",
+  "currency"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Driver",
+   "options": "Driver",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "driver.full_name",
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver Name",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pay_rule",
+   "fieldtype": "Link",
+   "label": "Pay Rule",
+   "options": "Driver Pay Rule",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "trips",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Trips",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_earn",
+   "fieldtype": "Section Break",
+   "label": "Earnings"
+  },
+  {
+   "fieldname": "trip_amount",
+   "fieldtype": "Currency",
+   "label": "Trip Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "km_amount",
+   "fieldtype": "Currency",
+   "label": "Distance Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_e",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tonnage_amount",
+   "fieldtype": "Currency",
+   "label": "Tonnage Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission_amount",
+   "fieldtype": "Currency",
+   "label": "Commission Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_e2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "columns": 2,
+   "fieldname": "gross_earning",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Gross Trip Earning",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_rec",
+   "fieldtype": "Section Break",
+   "label": "Advance Recovery"
+  },
+  {
+   "fieldname": "outstanding_advance",
+   "fieldtype": "Currency",
+   "label": "Outstanding Advance",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_r",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 2,
+   "description": "Editable \u2014 reduce it to spread recovery over more months.",
+   "fieldname": "advance_recovery",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Recovery This Month",
+   "options": "currency"
+  },
+  {
+   "fieldname": "cb_r2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "bold": 1,
+   "columns": 2,
+   "fieldname": "net_addition",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Net Addition to Salary",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Currency",
+   "options": "Currency",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-30 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Goods Transport",
+ "name": "Driver Payroll Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

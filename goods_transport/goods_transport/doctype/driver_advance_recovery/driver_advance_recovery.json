@@ -1,0 +1,99 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-08-30 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "driver",
+  "employee",
+  "trip_advance",
+  "trip",
+  "advance_amount",
+  "previously_settled",
+  "recovery_amount",
+  "currency"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Driver",
+   "options": "Driver",
+   "read_only": 1
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "trip_advance",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Trip Advance",
+   "options": "Trip Advance",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "trip",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Transport Trip",
+   "options": "Transport Trip",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "advance_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Advance Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "previously_settled",
+   "fieldtype": "Currency",
+   "label": "Already Settled",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "recovery_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Recovered Now",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Currency",
+   "options": "Currency",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-08-30 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Goods Transport",
+ "name": "Driver Advance Recovery",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

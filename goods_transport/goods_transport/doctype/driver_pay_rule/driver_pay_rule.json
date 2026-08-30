@@ -1,0 +1,255 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:rule_name",
+ "creation": "2026-08-30 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "rule_name",
+  "company",
+  "cb_h1",
+  "is_active",
+  "valid_from",
+  "valid_upto",
+  "scope_section",
+  "driver",
+  "vehicle_type",
+  "cb_s1",
+  "route",
+  "earnings_section",
+  "per_trip_amount",
+  "trip_component",
+  "rate_per_km",
+  "km_component",
+  "cb_e1",
+  "rate_per_ton",
+  "tonnage_component",
+  "commission_percent",
+  "commission_component",
+  "recovery_section",
+  "recover_advances",
+  "recovery_component",
+  "cb_r1",
+  "max_recovery_per_month",
+  "currency"
+ ],
+ "fields": [
+  {
+   "fieldname": "rule_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Rule Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_h1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Active"
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From"
+  },
+  {
+   "fieldname": "valid_upto",
+   "fieldtype": "Date",
+   "label": "Valid Upto"
+  },
+  {
+   "description": "Leave all three blank for a company-wide default rule. The most specific matching rule wins: Driver &gt; Vehicle Type + Route &gt; Vehicle Type &gt; Route &gt; company default.",
+   "fieldname": "scope_section",
+   "fieldtype": "Section Break",
+   "label": "Applies To"
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Driver",
+   "options": "Driver"
+  },
+  {
+   "fieldname": "vehicle_type",
+   "fieldtype": "Link",
+   "label": "Vehicle Type",
+   "options": "Vehicle Type"
+  },
+  {
+   "fieldname": "cb_s1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "route",
+   "fieldtype": "Link",
+   "label": "Route",
+   "options": "Transport Route"
+  },
+  {
+   "description": "Every basis with a non-zero rate is applied and added together for each completed Trip.",
+   "fieldname": "earnings_section",
+   "fieldtype": "Section Break",
+   "label": "Trip Earnings"
+  },
+  {
+   "fieldname": "per_trip_amount",
+   "fieldtype": "Currency",
+   "label": "Amount Per Trip",
+   "options": "currency"
+  },
+  {
+   "depends_on": "eval:doc.per_trip_amount",
+   "fieldname": "trip_component",
+   "fieldtype": "Link",
+   "label": "Trip Component",
+   "options": "Salary Component"
+  },
+  {
+   "fieldname": "rate_per_km",
+   "fieldtype": "Currency",
+   "label": "Rate Per KM",
+   "options": "currency"
+  },
+  {
+   "depends_on": "eval:doc.rate_per_km",
+   "fieldname": "km_component",
+   "fieldtype": "Link",
+   "label": "Distance Component",
+   "options": "Salary Component"
+  },
+  {
+   "fieldname": "cb_e1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rate_per_ton",
+   "fieldtype": "Currency",
+   "label": "Rate Per Ton",
+   "options": "currency"
+  },
+  {
+   "depends_on": "eval:doc.rate_per_ton",
+   "fieldname": "tonnage_component",
+   "fieldtype": "Link",
+   "label": "Tonnage Component",
+   "options": "Salary Component"
+  },
+  {
+   "fieldname": "commission_percent",
+   "fieldtype": "Percent",
+   "label": "Commission % of Trip Freight"
+  },
+  {
+   "depends_on": "eval:doc.commission_percent",
+   "fieldname": "commission_component",
+   "fieldtype": "Link",
+   "label": "Commission Component",
+   "options": "Salary Component"
+  },
+  {
+   "fieldname": "recovery_section",
+   "fieldtype": "Section Break",
+   "label": "Advance Recovery"
+  },
+  {
+   "default": "1",
+   "fieldname": "recover_advances",
+   "fieldtype": "Check",
+   "label": "Recover Trip Advances From Salary"
+  },
+  {
+   "depends_on": "recover_advances",
+   "description": "Must be a Deduction component whose account is the Driver Advance account.",
+   "fieldname": "recovery_component",
+   "fieldtype": "Link",
+   "label": "Recovery Component",
+   "options": "Salary Component"
+  },
+  {
+   "fieldname": "cb_r1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "recover_advances",
+   "description": "0 = recover the full outstanding balance in one month.",
+   "fieldname": "max_recovery_per_month",
+   "fieldtype": "Currency",
+   "label": "Max Recovery Per Month",
+   "options": "currency"
+  },
+  {
+   "fetch_from": "company.default_currency",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Currency",
+   "options": "Currency",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-30 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Goods Transport",
+ "name": "Driver Pay Rule",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "share": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "rule_name",
+ "track_changes": 1
+}

@@ -7,6 +7,10 @@ advances, trip expenses, and profitability — while reusing ERPNext for all
 accounting, so revenue and cost flow through standard Sales Invoices,
 Purchase Invoices, Journal Entries, and the GL.
 
+Driver payroll is part of the same app: completed trips become trip earnings, which flow into standard HRMS salary slips with cash advances recovered from them.
+
+Requires **frappe v15**, **erpnext v15** and **hrms v15**.
+
 Published by **Techs Arena**. MIT licensed.
 
 ---
@@ -254,6 +258,156 @@ belongs in a separate review flow.
 
 ---
 
+## Driver payroll
+
+Completed trips pay the driver, through standard HRMS documents. Nothing here
+writes to the GL directly — the Salary Slip does, exactly as it does for every
+other employee.
+
+```
+Transport Trip  (Delivered / Settled / Closed)
+       |  Driver Pay Rule resolves the rates
+       v
+Driver Trip Earning        one per trip, per driver
+       |  Driver Payroll Run — one per month, aggregates by driver
+       v
+Additional Salary          earnings + one advance-recovery deduction
+       |  standard HRMS Payroll Entry
+       v
+Salary Slip  ->  Journal Entry  ->  GL
+```
+
+### Payroll DocTypes
+
+| DocType | Kind | Purpose |
+|---|---|---|
+| `Driver Pay Rule` | master | Rates and the Salary Components they post to. Scoped to a driver, a vehicle type, a route, or the whole company. |
+| `Driver Trip Earning` | record | One per Trip, unique. What the driver earned and how it was computed. `Pending → Processed`. |
+| `Driver Payroll Run` | submittable | One per period. Aggregates earnings by driver, sets advance recovery, posts Additional Salary records on submit. |
+| `Driver Payroll Detail` | child | One row per driver. `advance_recovery` is editable. |
+| `Driver Advance Recovery` | child | FIFO allocation of the recovery across the driver's open Trip Advances. |
+
+### Four earning bases
+
+Every basis with a non-zero rate on the matching rule is applied and summed:
+
+| Basis | Field | Computed from |
+|---|---|---|
+| Flat per trip | `per_trip_amount` | one per completed Trip |
+| Per KM | `rate_per_km` | `Trip.actual_distance`, else `planned_distance`, else `Transport Route.distance_km` |
+| Per ton | `rate_per_ton` | `Trip.loaded_weight` ÷ 1000 (rolled up from Bilties) |
+| Commission | `commission_percent` | % of submitted `Bilty.freight_amount` on the Trip |
+
+Rules resolve most-specific-first — `driver → vehicle_type + route → vehicle_type
+→ route → company default` — and honour `valid_from` / `valid_upto` against the
+Trip date, so a rate revision never restates trips already run.
+
+### Advance recovery needs no Journal Entry
+
+`Trip Advance` debits the **Driver Advances** asset account when cash is handed
+over. Three things settle it:
+
+1. **Spent on the trip** — a submitted `Trip Expense` with `payment_mode = "Trip Advance"`.
+2. **Returned in cash** — `Trip Settlement.cash_returned`, allocated across that trip's advances oldest-first.
+3. **Recovered from salary** — a submitted `Driver Payroll Run`.
+
+```
+outstanding = amount − consumed − cash_returned_allocated − recovered
+```
+
+The seeded `Driver Advance Recovery` deduction component points at that same
+**Driver Advances** account, so when the Salary Slip posts it credits the
+account and the driver's balance clears in the GL with no manual entry.
+`max_recovery_per_month` caps how much comes out of one month's salary; `0`
+recovers the whole balance. The figure stays editable per driver on the run.
+
+### Why driver pay is not in `Trip Settlement.total_cost`
+
+`total_cost` stays vehicle hire + trip expenses — exactly what the GL holds
+against the Trip accounting dimension — so the settlement keeps reconciling
+with **Trip Profitability**. Driver trip pay reaches the GL through a monthly
+Salary Slip covering many trips and carrying no Trip dimension, so it is shown
+beside it as `Driver Trip Pay` and `Profit After Driver Pay` (custom fields on
+Trip Settlement), never folded into `total_cost`.
+
+### Payroll masters seeded on install
+
+Per company, idempotently:
+
+- **Accounts** — `Driver Advances` (Asset, under Loans and Advances) and `Driver Trip Earnings` (Expense, under Indirect Expenses).
+- **Salary Components** — Driver Basic Salary, Trip Allowance, Distance Allowance, Tonnage Allowance, Freight Commission (earnings) and Driver Advance Recovery (deduction), each wired to the right account.
+- **Salary Structure** — `Driver Salary Structure - {abbr}`, monthly, `Driver Basic Salary = base`, submitted.
+- **Driver Pay Rule** — `Default Driver Pay - {abbr}`, all components wired, every rate at zero (a zero-rate rule earns nothing, which is the safe default).
+- **Workspace** — `Driver Payroll`.
+
+### Payroll reports (3)
+
+**Driver Earnings Register** (every trip earning with its basis breakdown and
+payroll status), **Driver Advance Recovery Status** (issued / spent on trip /
+recovered from salary / outstanding, per driver), **Driver Cost Per Trip**
+(driver pay against the trip's freight revenue, amount and percentage).
+
+### Running a month
+
+1. Trips reaching **Delivered** become `Driver Trip Earning` records.
+2. Open a **Driver Payroll Run** for the month → **Fetch Trip Earnings** (it rescans the period, so trips missed by the live hook are still caught).
+3. Review gross earnings, adjust `advance_recovery` to spread a deduction over more months.
+4. **Submit** — Additional Salary records are created; earnings become `Processed`.
+5. Run the normal **Payroll Entry** for the same period.
+
+Cancelling a run cancels its Additional Salaries (refused if a Salary Slip has
+already paid them), releases the earnings back to `Pending`, and reopens any
+advance it cleared.
+
+### Payroll guard rails
+
+- A driver with no linked `Employee` blocks the run by name, rather than failing inside Additional Salary.
+- Market-vehicle drivers have no Employee, so they generate no earning at all — they are paid by the vehicle owner out of the hire.
+- Inactive employees, a payroll date before joining, and a missing Salary Structure Assignment are caught before submit.
+- Recovery above the outstanding balance is rejected on client and server.
+- Cancelling a Trip whose earning is `Processed` is refused; a `Pending` earning is voided.
+- One earning per Trip, enforced by a unique constraint — regenerating recomputes in place.
+
+---
+
+## Demo dataset
+
+A seeder builds a complete Pakistani goods-transport company — three months of
+operations and two months of processed payroll:
+
+```bash
+bench --site <site> execute goods_transport.demo.seed_all.run
+```
+
+| Command | What it does |
+|---|---|
+| `goods_transport.demo.reset.run` | Cancels and deletes every transaction; keeps masters |
+| `goods_transport.demo.seed_masters.run` | Fiscal years, accounts, holiday list, locations, routes, vehicles, drivers + employees, pay rules, rate contracts |
+| `goods_transport.demo.seed_operations.run` | Orders, trips, bilties, advances, expenses, PODs, sales invoices, hire bills, settlements |
+| `goods_transport.demo.seed_collections.run` | Customer payments, so receivables age realistically |
+| `goods_transport.demo.seed_payroll.run` | Driver Payroll Runs + Payroll Entries for completed months |
+
+Deterministic (fixed seed) and deliberately leaves the **current month
+unprocessed** — trips in every pipeline stage and Pending trip earnings — so
+payroll can be run live in front of an audience. Edit `goods_transport/demo/data.py`
+to change the fleet, customers, drivers, routes or cargo mix.
+
+## Tests
+
+```bash
+bench --site <site> run-tests --app goods_transport
+```
+
+Ten payroll tests cover rule resolution and validity windows, the four earning
+bases, the no-Employee and not-yet-delivered guards, idempotent regeneration,
+advance outstanding arithmetic, the recovery cap, over-recovery rejection, and a
+full run submit/cancel cycle.
+
+> On a site holding real data, note that `run-tests` fires ERPNext's
+> `before_tests` hook, which clears Item Prices and enables all admin roles.
+
+---
+
 ## Install
 
 Requires a Frappe / ERPNext v15 bench.
@@ -261,6 +415,7 @@ Requires a Frappe / ERPNext v15 bench.
 ```bash
 cd ~/frappe-bench
 bench get-app https://github.com/techsarena/goods_transport.git
+bench --site <your-site> install-app hrms          # required by the payroll layer
 bench --site <your-site> install-app goods_transport
 ```
 
