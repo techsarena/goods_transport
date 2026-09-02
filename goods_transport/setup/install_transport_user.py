@@ -197,3 +197,39 @@ def restrict_user_to_transport_modules(user_email: str, keep_visible: set[str] |
 		user.append("block_modules", {"module": m})
 	user.save(ignore_permissions=True)
 	return to_block
+
+
+# Roles that indicate the user needs broad visibility across every module —
+# never auto-restrict their sidebar even if they also carry the Transport
+# User role.
+_ADMIN_ROLES = frozenset({"System Manager", "Administrator"})
+
+
+def auto_block_non_transport_modules(doc, method=None):
+	"""User.validate hook — auto-populate block_modules when the Transport
+	User role is present, the user is not also an admin, and block_modules
+	has not been configured yet. Runs on the same save transaction, so no
+	recursion and no second write.
+
+	Deliberate no-ops (each covers a real admin workflow):
+	- User has no Transport User role → nothing to do.
+	- User also has System Manager / is Administrator → they need every module.
+	- User.block_modules is already non-empty → an admin (or the create
+	  script) has already configured this user; respect their choice and
+	  never re-clobber. To reset, admin clears block_modules and saves.
+	"""
+	if getattr(doc, "flags", None) and doc.flags.get("goods_transport_skip_auto_block"):
+		return
+	if getattr(doc, "name", None) == "Administrator":
+		return
+	role_names = {r.role for r in (doc.get("roles") or [])}
+	if TRANSPORT_USER_ROLE not in role_names:
+		return
+	if role_names & _ADMIN_ROLES:
+		return
+	if doc.get("block_modules"):
+		return
+
+	all_modules = frappe.get_all("Module Def", pluck="name")
+	for m in sorted(m for m in all_modules if m not in KEEP_VISIBLE_MODULES):
+		doc.append("block_modules", {"module": m})

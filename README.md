@@ -442,11 +442,24 @@ those users see it in their sidebar.
 
 DocType permissions block *access* to Selling / Buying / Stock / Accounting
 etc., but Frappe workspaces are public by default and still show up in the
-sidebar — visually cluttering the desk for a transport-only user. The user
-script populates `User.block_modules` with every module *except* Goods
-Transport, so the sidebar collapses down to just what the user works with.
-Any newly installed app on the bench is picked up automatically the next
-time the script runs for that user.
+sidebar — visually cluttering the desk for a transport-only user.
+
+`User.block_modules` is a per-user field that hides modules from the
+sidebar. This app populates it automatically via a `User.validate` hook
+(see `auto_block_non_transport_modules`), so the sidebar cleans itself the
+moment an admin assigns the Transport User role — no need to run the
+script for UI-created users. Hook rules:
+
+- Fires only when the user has the **Transport User** role.
+- Skips users who also carry **System Manager** or are **Administrator** —
+  they need every module.
+- Skips when `block_modules` is already non-empty — respects an admin's
+  manual overrides. To reset, clear `block_modules` on the User and save;
+  the hook repopulates from every currently installed module (so newly
+  installed apps get picked up automatically).
+
+The production script uses the same helper, so a script-created user
+lands with an already-clean sidebar without waiting for the hook.
 
 ### Creating a user in production
 

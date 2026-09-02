@@ -18,7 +18,7 @@ doctype_js = {
 	"Driver": "public/js/driver.js",
 }
 
-# Trip lifecycle -> driver earnings
+# Trip lifecycle -> driver earnings + Transport-User sidebar cleanup
 doc_events = {
 	"Trip Settlement": {
 		"validate": "goods_transport.goods_transport.services.settlement.attach_driver_pay",
@@ -26,6 +26,12 @@ doc_events = {
 	},
 	"Transport Trip": {
 		"on_cancel": "goods_transport.goods_transport.services.earnings.on_trip_cancel",
+	},
+	"User": {
+		# Auto-hide non-transport modules the moment the Transport User role
+		# is assigned via the desk. Guarded to only run once per user and
+		# never for admins — see auto_block_non_transport_modules for rules.
+		"validate": "goods_transport.setup.install_transport_user.auto_block_non_transport_modules",
 	},
 }
 
