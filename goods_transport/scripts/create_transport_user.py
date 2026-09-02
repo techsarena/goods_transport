@@ -27,6 +27,7 @@ import frappe
 from goods_transport.setup.install_transport_user import (
 	TRANSPORT_USER_ROLE,
 	install_transport_user_role,
+	restrict_user_to_transport_modules,
 )
 
 
@@ -38,6 +39,8 @@ def execute(
 	send_welcome_email: bool = False,
 	reset_password_link: bool = True,
 	extra_roles: list[str] | None = None,
+	hide_non_transport_modules: bool = True,
+	keep_visible_modules: list[str] | None = None,
 ) -> dict:
 	if not email:
 		frappe.throw("email is required")
@@ -83,6 +86,13 @@ def execute(
 	if added_roles:
 		user.save(ignore_permissions=True)
 
+	blocked_modules: list[str] = []
+	if hide_non_transport_modules:
+		blocked_modules = restrict_user_to_transport_modules(
+			email,
+			keep_visible=set(keep_visible_modules or []),
+		)
+
 	frappe.db.commit()
 
 	reset_link = None
@@ -96,6 +106,7 @@ def execute(
 		"created": created,
 		"roles_added": added_roles,
 		"password_reset_link": reset_link,
+		"blocked_modules": blocked_modules,
 	}
 	# Print for bench-execute visibility (execute returns dict, but console
 	# users appreciate a human-readable summary too).
@@ -103,6 +114,10 @@ def execute(
 	print(f"  User:        {result['user']}")
 	print(f"  Created:     {result['created']}")
 	print(f"  Roles added: {result['roles_added'] or '(none — already had them)'}")
+	if blocked_modules:
+		print(f"  Blocked modules ({len(blocked_modules)}): {', '.join(blocked_modules[:6])}" + (
+			f", ...(+{len(blocked_modules) - 6} more)" if len(blocked_modules) > 6 else ""
+		))
 	if reset_link:
 		print(f"  Reset link:  {reset_link}")
 		print("  Share the reset link with the user; it expires per Frappe defaults.")

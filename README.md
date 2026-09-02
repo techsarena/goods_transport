@@ -438,6 +438,16 @@ create, or edit them, from either the desk or the API.
 The seeder also attaches the role to the `Goods Transport` workspace so
 those users see it in their sidebar.
 
+### Hiding other apps' workspaces from the sidebar
+
+DocType permissions block *access* to Selling / Buying / Stock / Accounting
+etc., but Frappe workspaces are public by default and still show up in the
+sidebar — visually cluttering the desk for a transport-only user. The user
+script populates `User.block_modules` with every module *except* Goods
+Transport, so the sidebar collapses down to just what the user works with.
+Any newly installed app on the bench is picked up automatically the next
+time the script runs for that user.
+
 ### Creating a user in production
 
 The seeder never creates User records — that would be dangerous on a
@@ -456,10 +466,15 @@ Optional kwargs:
   `/update-password?key=…` URL you can share.
 - `extra_roles` — pass e.g. `["System Manager"]` if you want a
   demo/administrative user; leave empty for a transport-only user.
+- `hide_non_transport_modules` (default `true`) — populates
+  `User.block_modules` so only the Goods Transport workspace shows in the
+  sidebar. Set `false` to keep every module visible.
+- `keep_visible_modules` — list of extra module names to keep visible,
+  e.g. `["HR"]` if you also want the user to see HRMS workspaces.
 
-The script is idempotent — if the user already exists, it just ensures
-the Transport User role is on their profile without touching any other
-data.
+The script is idempotent — safe to re-run on the same email to reapply
+role and block_modules; if the user already exists no other data is
+touched.
 
 ---
 

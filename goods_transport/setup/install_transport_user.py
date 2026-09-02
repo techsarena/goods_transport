@@ -165,3 +165,35 @@ def _ensure_workspace_visibility():
 	if not any((r.role == TRANSPORT_USER_ROLE) for r in (ws.get("roles") or [])):
 		ws.append("roles", {"role": TRANSPORT_USER_ROLE})
 		ws.save(ignore_permissions=True)
+
+
+# Modules whose workspaces stay visible for a transport-only user. Everything
+# else is hidden via User.block_modules — DocType permissions already forbid
+# access, but Frappe workspaces are public by default and clutter the sidebar
+# even when the user cannot open any of their DocTypes. `Goods Transport` is
+# the only module a pure transport user needs to see in the sidebar.
+KEEP_VISIBLE_MODULES = {"Goods Transport"}
+
+
+def restrict_user_to_transport_modules(user_email: str, keep_visible: set[str] | None = None) -> list[str]:
+	"""Populate `User.block_modules` for the given user so every Module Def
+	except the transport ones is hidden from their sidebar.
+
+	Idempotent — recomputes the full list every time it runs, so newly
+	installed apps are picked up on the next call.
+
+	Returns the list of module names that ended up blocked.
+	"""
+	if not frappe.db.exists("User", user_email):
+		return []
+
+	whitelist = set(keep_visible or set()) | KEEP_VISIBLE_MODULES
+	all_modules = frappe.get_all("Module Def", pluck="name")
+	to_block = sorted(m for m in all_modules if m not in whitelist)
+
+	user = frappe.get_doc("User", user_email)
+	user.set("block_modules", [])
+	for m in to_block:
+		user.append("block_modules", {"module": m})
+	user.save(ignore_permissions=True)
+	return to_block
