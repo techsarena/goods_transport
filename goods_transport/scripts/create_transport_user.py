@@ -8,15 +8,27 @@ Callable from bench in production:
 Optional kwargs:
     first_name           split from full_name if not given
     last_name            split from full_name if not given
-    send_welcome_email   default False; True to send Frappe's password-reset email
-    reset_password_link  default True; if True and no welcome email, print a
-                         one-time reset link to stdout so admin can share it
-    extra_roles          list of extra role names (e.g. ["System Manager"] for a
-                         demo admin) — for the transport-only user leave empty
+    password             set the account password to this value (also works
+                         to reset the password on an existing user). SECURITY:
+                         the value is passed via --kwargs which lands in
+                         shell history and any bench execute log — prefer the
+                         default flow (reset link) unless you specifically
+                         need a pre-set password (e.g. seeding a demo user).
+    send_welcome_email   default False; True to send Frappe's password-reset
+                         email. Ignored when `password` is set.
+    reset_password_link  default True; if True and no welcome email and no
+                         `password`, print a one-time reset link to stdout so
+                         admin can share it. Ignored when `password` is set.
+    extra_roles          list of extra role names (e.g. ["System Manager"] for
+                         a demo admin) — for the transport-only user leave
+                         empty.
+    hide_non_transport_modules  default True; populate User.block_modules to
+                         collapse the sidebar to Goods Transport only.
+    keep_visible_modules list of extra module names to keep visible.
 
 Idempotent:
     - If the user exists, the Transport User role is added if missing;
-      no other data is overwritten.
+      no other data is overwritten (except password, if provided).
     - Ensures the Transport User role itself exists before assigning.
 """
 
@@ -36,6 +48,7 @@ def execute(
 	full_name: str | None = None,
 	first_name: str | None = None,
 	last_name: str | None = None,
+	password: str | None = None,
 	send_welcome_email: bool = False,
 	reset_password_link: bool = True,
 	extra_roles: list[str] | None = None,
@@ -93,10 +106,20 @@ def execute(
 			keep_visible=set(keep_visible_modules or []),
 		)
 
+	# Password handling. When an explicit password is given, set it and skip
+	# both the welcome email and the reset-link flow — the caller already
+	# knows the password.
+	password_set = False
+	if password:
+		from frappe.utils.password import update_password
+
+		update_password(user=email, pwd=password)
+		password_set = True
+
 	frappe.db.commit()
 
 	reset_link = None
-	if created and not send_welcome_email and reset_password_link:
+	if created and not password_set and not send_welcome_email and reset_password_link:
 		# Generate a one-time password-reset link the admin can share.
 		reset_link = _generate_password_reset_link(user)
 
@@ -106,6 +129,7 @@ def execute(
 		"created": created,
 		"roles_added": added_roles,
 		"password_reset_link": reset_link,
+		"password_set": password_set,
 		"blocked_modules": blocked_modules,
 	}
 	# Print for bench-execute visibility (execute returns dict, but console
@@ -118,7 +142,9 @@ def execute(
 		print(f"  Blocked modules ({len(blocked_modules)}): {', '.join(blocked_modules[:6])}" + (
 			f", ...(+{len(blocked_modules) - 6} more)" if len(blocked_modules) > 6 else ""
 		))
-	if reset_link:
+	if password_set:
+		print("  Password:    set from the `password` kwarg. User can log in now.")
+	elif reset_link:
 		print(f"  Reset link:  {reset_link}")
 		print("  Share the reset link with the user; it expires per Frappe defaults.")
 	elif created and send_welcome_email:

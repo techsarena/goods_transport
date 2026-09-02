@@ -484,6 +484,33 @@ Optional kwargs:
   sidebar. Set `false` to keep every module visible.
 - `keep_visible_modules` — list of extra module names to keep visible,
   e.g. `["HR"]` if you also want the user to see HRMS workspaces.
+- `password` — set the account password directly. Works both for new
+  users (skip the reset-link flow) and for existing users (reset). Value
+  is passed through Frappe's `update_password`. **Security note:** the
+  value lands in shell history and bench logs; prefer the reset-link
+  flow unless you specifically need a pre-set password (e.g. seeding a
+  demo user or scripted onboarding).
+
+Example — create a user with a specific initial password:
+
+```bash
+bench --site <site> execute goods_transport.scripts.create_transport_user.execute \
+    --kwargs '{"email": "ops1@mycompany.com", "full_name": "Ops One", "password": "ChangeMe!42"}'
+```
+
+Or reset an existing user's password:
+
+```bash
+bench --site <site> execute goods_transport.scripts.create_transport_user.execute \
+    --kwargs '{"email": "ops1@mycompany.com", "password": "NewSecret!123"}'
+```
+
+For interactive password entry (no history leak) you can still use
+Frappe's built-in bench command:
+
+```bash
+bench --site <site> set-user-password ops1@mycompany.com
+```
 
 The script is idempotent — safe to re-run on the same email to reapply
 role and block_modules; if the user already exists no other data is
