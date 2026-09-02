@@ -15,3 +15,4 @@ goods_transport.patches.v1_0.refresh_print_formats
 goods_transport.patches.v1_1.seed_trip_expense_types
 goods_transport.patches.v1_2.rename_freight_services_to_freight_items
 goods_transport.patches.v1_3.install_driver_payroll
+goods_transport.patches.v1_3.install_transport_user

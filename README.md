@@ -408,6 +408,61 @@ full run submit/cancel cycle.
 
 ---
 
+## Roles and users
+
+### Transport User role
+
+Seeded on install / migrate by `setup/install_transport_user.py` (and its
+v1_3 patch). Grants full operational access to the transport lifecycle
+end-to-end — including the accounting documents the flow produces — and
+nothing else:
+
+- **Full lifecycle** (read/write/create/submit/cancel/amend): every
+  transport DocType (Transport Order, Transport Trip, Bilty + child rows,
+  Proof of Delivery, Trip Advance, Trip Expense, Trip Settlement, all
+  transport masters).
+- **Full lifecycle** on the accounting docs those actions produce:
+  Sales Invoice, Purchase Invoice, Journal Entry, Payment Entry.
+- **Read + write + create**: Customer, Supplier, Vehicle, Driver, Item,
+  Address, Contact.
+- **Read-only**: Company, Currency, UOM, Country, Account, Cost Center,
+  Item Group, Supplier Group, Customer Group, Territory, Fiscal Year,
+  Print Format, Report.
+- **Desk essentials**: File, Comment, ToDo, Note.
+
+Everything else in the desk (Sales Order, Delivery Note, Purchase Order,
+Employee, Payroll, Manufacturing, System Settings, DocType, Role, User…)
+is blocked at the DocType permission layer — the user cannot list, read,
+create, or edit them, from either the desk or the API.
+
+The seeder also attaches the role to the `Goods Transport` workspace so
+those users see it in their sidebar.
+
+### Creating a user in production
+
+The seeder never creates User records — that would be dangerous on a
+running site. Use the shipped script:
+
+```bash
+bench --site <site> execute goods_transport.scripts.create_transport_user.execute \
+    --kwargs '{"email": "ops1@mycompany.com", "full_name": "Ops One"}'
+```
+
+Optional kwargs:
+
+- `send_welcome_email` (default `false`) — set `true` if outgoing email is configured.
+- `reset_password_link` (default `true`) — when no welcome email is sent
+  and the user is newly created, the script prints a one-time
+  `/update-password?key=…` URL you can share.
+- `extra_roles` — pass e.g. `["System Manager"]` if you want a
+  demo/administrative user; leave empty for a transport-only user.
+
+The script is idempotent — if the user already exists, it just ensures
+the Transport User role is on their profile without touching any other
+data.
+
+---
+
 ## Install
 
 Requires a Frappe / ERPNext v15 bench.
